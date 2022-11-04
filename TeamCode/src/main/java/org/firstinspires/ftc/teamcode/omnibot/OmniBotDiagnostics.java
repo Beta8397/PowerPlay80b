@@ -59,12 +59,9 @@ public class OmniBotDiagnostics extends LinearOpMode {
         else if (gamepad1.dpad_up) handleBotPowers(0, 0.2f, 0);
         else if (gamepad1.dpad_down) handleBotPowers(0, 0, 0.2f);
         else {
-            float px = gamepad1.left_stick_x;
-            float py = -gamepad1.left_stick_y;
-            float pa = -gamepad1.right_stick_x;
-            if (Math.abs(px) < 0.05) px = 0;
-            if (Math.abs(py) < 0.05) py = 0;
-            if (Math.abs(pa) < 0.05) pa = 0;
+            float px = gamepad1.left_stick_x / 4;
+            float py = -gamepad1.left_stick_y / 4;
+            float pa = -gamepad1.right_stick_x / 4;
             handleBotPowers(px, py, pa);
         }
 

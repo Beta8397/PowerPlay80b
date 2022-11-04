@@ -13,14 +13,15 @@ public class TestOmni extends LinearOpMode {
     public void runOpMode() {
         bot.init(hardwareMap);
         waitForStart();
-        bot.setHeadingDegrees(45);
+        bot.setPose(0, 0, 0);
         while(opModeIsActive()){
-            float pwx = gamepad1.left_stick_x;
-            float pwy = -gamepad1.left_stick_y;
-            float pwa = -gamepad1.right_stick_x;
+            bot.updateOdometry();
+            float pwx = gamepad1.left_stick_x/4;
+            float pwy = -gamepad1.left_stick_y/4;
+            float pwa = -gamepad1.right_stick_x/4;
             bot.setDrivePower(pwx, pwy, pwa);
-            telemetry.addData("Heading",
-                    Math.toDegrees(bot.getHeading()));
+            telemetry.addData("Pose", "X = %.1f Y = %.1f  H = %.1f",
+                    bot.getPose().x, bot.getPose().y, Math.toDegrees(bot.getPose().theta));
             telemetry.update();
         }
         bot.setDrivePower(0,0, 0);

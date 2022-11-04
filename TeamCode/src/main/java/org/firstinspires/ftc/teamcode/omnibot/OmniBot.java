@@ -5,11 +5,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.i2c.BNO055Enhanced;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
 import org.firstinspires.ftc.teamcode.util.Pose;
 
@@ -19,7 +21,9 @@ public class OmniBot {
     DcMotorEx leftFront;
     DcMotorEx rightFront;
     DcMotorEx rightBack;
-    BNO055IMU imu;
+    BNO055Enhanced imu;
+    DcMotorEx liftMotor;
+    Servo clawServo;
 
     float headingOffset = 0;
 
@@ -30,8 +34,9 @@ public class OmniBot {
 
     private Pose pose = new Pose(0, 0, 0);
 
-    public static float TICS_PER_RADIAN = 537.6f * 13/(8 * (float)Math.PI);
-    public static float TICS_PER_INCH = 537.6f * (float)Math.sqrt(2) / (4 * (float)Math.PI);
+    public static final float TICS_PER_RADIAN = 537.6f * 13/(8 * (float)Math.PI);
+    public static final float TICS_PER_INCH = 537.6f / (4 * (float)Math.sqrt(2) * (float)Math.PI);
+    public static final float MAX_TICS_PER_SEC = 2500;
 
     public void init(HardwareMap hwmap){
         leftBack = hwmap.get(DcMotorEx.class, "left_back");
@@ -48,13 +53,22 @@ public class OmniBot {
         leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        imu = hwmap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imu = hwmap.get(BNO055Enhanced.class, "imu");
+        BNO055Enhanced.Parameters parameters = new BNO055Enhanced.Parameters();
+        parameters.axesMap = BNO055Enhanced.AxesMap.XZY;
+        parameters.axesSign = BNO055Enhanced.AxesSign.PPN;
+        parameters.accelUnit = BNO055Enhanced.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.angleUnit = BNO055Enhanced.AngleUnit.RADIANS;
         parameters.calibrationDataFile = "BN055Cali.json";
         parameters.loggingEnabled = false;
         parameters.loggingTag = "IMU";
+
+        liftMotor = hwmap.get(DcMotorEx.class, "liftMotor");
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor.setTargetPosition(0);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        clawServo = hwmap.get(Servo.class, "clawServo");
 
         imu.initialize(parameters);
     }
@@ -77,6 +91,14 @@ public class OmniBot {
         rightBack.setPower(pBR);
         rightFront.setPower(pFR);
     }
+
+    public void setDriveSpeed(float vx, float vy, float va){
+        float px = vx * TICS_PER_INCH / MAX_TICS_PER_SEC;
+        float py = vy * TICS_PER_INCH / MAX_TICS_PER_SEC;
+        float pa = va * TICS_PER_RADIAN / MAX_TICS_PER_SEC;
+        setDrivePower(px, py, pa);
+    }
+
 
     public float getHeading(){
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC,
@@ -105,8 +127,8 @@ public class OmniBot {
        flTics = flCurrTics;
        frTics = frCurrTics;
 
-       float dYR = 0.25f * (blTics + frTics + brTics + flTics) / TICS_PER_INCH;
-       float dXR = 0.25f * (flTics - frTics - blTics + brTics) / TICS_PER_INCH;
+       float dYR = 0.25f * (blNew + frNew + brNew + flNew) / TICS_PER_INCH;
+       float dXR = 0.25f * (flNew - frNew - blNew + brNew) / TICS_PER_INCH;
 
        float newHeading = getHeading();
        float headingChange = AngleUtil.normalizeRadians(newHeading - pose.theta);
@@ -130,5 +152,14 @@ public class OmniBot {
 
     public Pose getPose(){
         return pose;
+    }
+
+    public void setClawPosition(float pos){
+        clawServo.setPosition(pos);
+    }
+
+    public void setLiftPosition(int tics){
+        liftMotor.setTargetPosition(tics);
+        liftMotor.setPower(0.4f);
     }
 }
