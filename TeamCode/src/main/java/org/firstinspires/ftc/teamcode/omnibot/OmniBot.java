@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.omnibot;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -17,42 +17,46 @@ import org.firstinspires.ftc.teamcode.util.Pose;
 
 
 public class OmniBot {
-    DcMotorEx leftBack;
-    DcMotorEx leftFront;
-    DcMotorEx rightFront;
-    DcMotorEx rightBack;
+    DcMotorEx back;
+    DcMotorEx front;
+    DcMotorEx left;
+    DcMotorEx right;
     BNO055Enhanced imu;
-    DcMotorEx liftMotor;
+    public  DcMotorEx liftMotor;
     Servo clawServo;
 
     float headingOffset = 0;
 
-    int blTics = 0;
-    int flTics = 0;
-    int brTics = 0;
-    int frTics = 0;
+    int lTics = 0;
+    int fTics = 0;
+    int rTics = 0;
+    int bTics = 0;
 
     private Pose pose = new Pose(0, 0, 0);
 
     public static final float TICS_PER_RADIAN = 537.6f * 13/(8 * (float)Math.PI);
-    public static final float TICS_PER_INCH = 537.6f / (4 * (float)Math.sqrt(2) * (float)Math.PI);
+    public static final float TICS_PER_INCH = 537.6f / (4 * (float)Math.PI);
     public static final float MAX_TICS_PER_SEC = 2500;
+    public static final int LIFT_MIN = -2600;
+    public static final int LIFT_MAX = 0;
+    public static final float CLAW_OPEN = 1;
+    public static final float CLAW_CLOSED = 0.3f;
 
     public void init(HardwareMap hwmap){
-        leftBack = hwmap.get(DcMotorEx.class, "left_back");
-        rightBack = hwmap.get(DcMotorEx.class, "right_back");
-        leftFront = hwmap.get(DcMotorEx.class, "left_front");
-        rightFront = hwmap.get(DcMotorEx.class, "right_front");
-        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        back = hwmap.get(DcMotorEx.class, "back");
+        right = hwmap.get(DcMotorEx.class, "right");
+        front = hwmap.get(DcMotorEx.class, "front");
+        left = hwmap.get(DcMotorEx.class, "left");
+        right.setDirection(DcMotorSimple.Direction.REVERSE);
+        back.setDirection(DcMotorSimple.Direction.REVERSE);
+        back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        front.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        back.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        front.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         imu = hwmap.get(BNO055Enhanced.class, "imu");
         BNO055Enhanced.Parameters parameters = new BNO055Enhanced.Parameters();
         parameters.axesMap = BNO055Enhanced.AxesMap.XZY;
@@ -73,23 +77,23 @@ public class OmniBot {
         imu.initialize(parameters);
     }
     public void setDrivePower(float px, float py, float pa) {
-        float pBL = -px + py - pa;
-        float pFL = +px + py - pa;
-        float pBR = +px + py + pa;
-        float pFR = -px + py + pa;
-        float max = Math.max(Math.abs(pBL), Math.abs(pFL));
-        max = Math.max(max, Math.abs(pBR));
-        max = Math.max(max, Math.abs(pFR));
+        float pL = py + 0 - pa;
+        float pR = py + 0 + pa;
+        float pB = 0 + px + pa;
+        float pF = 0 + px - pa;
+        float max = Math.max(Math.abs(pL), Math.abs(pR));
+        max = Math.max(max, Math.abs(pB));
+        max = Math.max(max, Math.abs(pF));
         if(max > 1){
-            pBL = pBL/max;
-            pFL /= max;
-            pBR /= max;
-            pFR /= max;
+            pL = pL/max;
+            pR /= max;
+            pB /= max;
+            pF /= max;
         }
-        leftBack.setPower(pBL);
-        leftFront.setPower(pFL);
-        rightBack.setPower(pBR);
-        rightFront.setPower(pFR);
+        back.setPower(pB);
+        front.setPower(pF);
+        right.setPower(pR);
+        left.setPower(pL);
     }
 
     public void setDriveSpeed(float vx, float vy, float va){
@@ -114,21 +118,21 @@ public class OmniBot {
     }
 
     public Pose updateOdometry(){
-       int blCurrTics = leftBack.getCurrentPosition();
-       int brCurrTics = rightBack.getCurrentPosition();
-       int flCurrTics = leftFront.getCurrentPosition();
-       int frCurrTics = rightFront.getCurrentPosition();
-       int blNew = blCurrTics - blTics;
-       int brNew = brCurrTics - brTics;
-       int flNew = flCurrTics - flTics;
-       int frNew = frCurrTics - frTics;
-       blTics = blCurrTics;
-       brTics = brCurrTics;
-       flTics = flCurrTics;
-       frTics = frCurrTics;
+       int lCurrTics = back.getCurrentPosition();
+       int rCurrTics = right.getCurrentPosition();
+       int fCurrTics = front.getCurrentPosition();
+       int bCurrTics = left.getCurrentPosition();
+       int lNew = lCurrTics - lTics;
+       int rNew = rCurrTics - rTics;
+       int fNew = fCurrTics - fTics;
+       int bNew = bCurrTics - bTics;
+       lTics = lCurrTics;
+       rTics = rCurrTics;
+       fTics = fCurrTics;
+       bTics = bCurrTics;
 
-       float dYR = 0.25f * (blNew + frNew + brNew + flNew) / TICS_PER_INCH;
-       float dXR = 0.25f * (flNew - frNew - blNew + brNew) / TICS_PER_INCH;
+       float dYR = 0.5f * (lNew + rNew) / TICS_PER_INCH;
+       float dXR = 0.5f * (fNew + bNew) / TICS_PER_INCH;
 
        float newHeading = getHeading();
        float headingChange = AngleUtil.normalizeRadians(newHeading - pose.theta);
@@ -144,10 +148,10 @@ public class OmniBot {
     public void setPose(float x, float y, float headingDegrees){
         setHeadingDegrees(headingDegrees);
         pose = new Pose(x, y, (float)Math.toRadians(headingDegrees));
-        blTics = leftBack.getCurrentPosition();
-        brTics = rightBack.getCurrentPosition();
-        flTics = leftFront.getCurrentPosition();
-        frTics = rightFront.getCurrentPosition();
+        lTics = back.getCurrentPosition();
+        rTics = right.getCurrentPosition();
+        fTics = front.getCurrentPosition();
+        bTics = left.getCurrentPosition();
     }
 
     public Pose getPose(){
@@ -158,8 +162,13 @@ public class OmniBot {
         clawServo.setPosition(pos);
     }
 
+    public void openClaw(){setClawPosition(CLAW_OPEN);}
+
+    public void closeClaw(){setClawPosition(CLAW_CLOSED);}
+
     public void setLiftPosition(int tics){
+        tics = Range.clip(tics, LIFT_MIN, LIFT_MAX);
         liftMotor.setTargetPosition(tics);
-        liftMotor.setPower(0.4f);
+        liftMotor.setPower(1f);
     }
 }
