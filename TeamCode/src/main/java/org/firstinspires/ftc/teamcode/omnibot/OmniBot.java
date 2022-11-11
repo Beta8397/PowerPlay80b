@@ -171,4 +171,12 @@ public class OmniBot {
         liftMotor.setTargetPosition(tics);
         liftMotor.setPower(1f);
     }
+
+    public void resetLiftEncoder(){
+        liftMotor.setPower(0);
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor.setTargetPosition(0);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
 }

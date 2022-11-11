@@ -26,7 +26,7 @@ public class OmniBotDiagnostics extends LinearOpMode {
 //        bot.getBackLeft().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        bot.getBackRight().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        bot.setHeadingDegrees(0);
+        bot.setPose(0, 0, 0);
 
         waitForStart();
 
@@ -42,9 +42,6 @@ public class OmniBotDiagnostics extends LinearOpMode {
     protected void doOneIteration(){
 
         bot.updateOdometry();
-
-        telemetry.addData("buttons","a:%b  b:%b  x:%b  y:%b  lsy:%.2f",
-                gamepad1.a, gamepad1.b, gamepad1.x, gamepad1.y, gamepad1.left_stick_y);
 
         if (gamepad1.a) handleMotorPowers(0.2f,0,0,0);
         else if (gamepad1.x) handleMotorPowers(0,0.2f,0,0);
@@ -84,10 +81,10 @@ public class OmniBotDiagnostics extends LinearOpMode {
 
     private void handleMotorPowers(float p1, float p2, float p3, float p4){
         bot.back.setPower(p1);
-        bot.front.setPower(p2);
-        bot.left.setPower(p3);
+        bot.left.setPower(p2);
+        bot.front.setPower(p3);
         bot.right.setPower(p4);
-        telemetry.addData("Motor Powers", "B: %.2f  F: %.2f  L: %.2f  R: %.2f", p1, p2, p3, p4);
+        telemetry.addData("Motor Powers", "B: %.2f  F: %.2f  L: %.2f  R: %.2f", p1, p3, p2, p4);
     }
 
 }
