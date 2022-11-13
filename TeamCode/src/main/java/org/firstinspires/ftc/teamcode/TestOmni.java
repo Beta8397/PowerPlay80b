@@ -13,20 +13,21 @@ public class TestOmni extends LinearOpMode {
     OmniBot bot = new OmniBot();
 
     ButtonToggle leftBump2Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
-        protected boolean getButtonState() {return false;} };
+        protected boolean getButtonState() {return gamepad2.left_bumper;} };
     boolean adjustLiftMode = false;
-
-    ButtonToggle b2Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
-        protected boolean getButtonState() {return gamepad2.b;}};
 
     ButtonToggle x2Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
         protected boolean getButtonState() {return gamepad2.x;}};
 
+
     @Override
     public void runOpMode() {
         bot.init(hardwareMap);
+
         int liftTarget = bot.liftMotor.getCurrentPosition();
-        float clawPosition = 0;
+
+        boolean clawClosed = false;
+
         waitForStart();
         bot.setPose(0, 0, 0);
         while(opModeIsActive()){
@@ -36,11 +37,16 @@ public class TestOmni extends LinearOpMode {
             telemetry.addData("Pose", "X = %.1f Y = %.1f  H = %.1f",
                     bot.getPose().x, bot.getPose().y, Math.toDegrees(bot.getPose().theta));
 
-            // For teleop, treat chassis as a diamond (not a square)
+            // Treat chassis as a diamond
             float pwxprime = gamepad1.left_stick_x/2;
             float pwyprime = -gamepad1.left_stick_y/2;
             float pwx = (pwxprime - pwyprime)/(float)Math.sqrt(2);
             float pwy = (pwxprime + pwyprime)/(float)Math.sqrt(2);
+
+            //Treat chassis as a square
+//            float pwx = +gamepad1.left_stick_y/2;
+//            float pwy = +gamepad1.left_stick_x/2;
+
             float pwa = (gamepad1.left_trigger - gamepad1.right_trigger)/2;
             bot.setDrivePower(pwx, pwy, pwa);
 
@@ -65,18 +71,19 @@ public class TestOmni extends LinearOpMode {
 
             bot.setLiftPosition(liftTarget);
 
+            telemetry.addData("Lift","tics = %d  target = %d",
+                    bot.liftMotor.getCurrentPosition(), liftTarget);
+
             // Handle claw
-            if(b2Toggle.update()) {
-                bot.openClaw();
-                telemetry.speak("Open Claw");
-            }
-
             if(x2Toggle.update()) {
-                bot.closeClaw();
-                telemetry.speak("Close Claw");
+                clawClosed = !clawClosed;
+                if (clawClosed) {
+                    bot.closeClaw();
+                } else {
+                    bot.openClaw();
+                }
             }
 
-            telemetry.addData("Lift Target", liftTarget);
             telemetry.update();
         }
         bot.setDrivePower(0,0, 0);

@@ -34,13 +34,13 @@ public class OmniBot {
 
     private Pose pose = new Pose(0, 0, 0);
 
-    public static final float TICS_PER_RADIAN = 537.6f * 13/(8 * (float)Math.PI);
-    public static final float TICS_PER_INCH = 537.6f / (4 * (float)Math.PI);
+    public static final float TICS_PER_RADIAN = 276.1f; // Empiric Measurement
+    public static final float TICS_PER_INCH = 44.2f;    // Empiric Measurement
     public static final float MAX_TICS_PER_SEC = 2500;
     public static final int LIFT_MIN = -2600;
     public static final int LIFT_MAX = 0;
-    public static final float CLAW_OPEN = 1;
-    public static final float CLAW_CLOSED = 0.3f;
+    public static final float CLAW_OPEN = 0.62f;
+    public static final float CLAW_CLOSED = 0.32f;
 
     public void init(HardwareMap hwmap){
         back = hwmap.get(DcMotorEx.class, "back");
@@ -118,10 +118,10 @@ public class OmniBot {
     }
 
     public Pose updateOdometry(){
-       int lCurrTics = back.getCurrentPosition();
+       int lCurrTics = left.getCurrentPosition();
        int rCurrTics = right.getCurrentPosition();
        int fCurrTics = front.getCurrentPosition();
-       int bCurrTics = left.getCurrentPosition();
+       int bCurrTics = back.getCurrentPosition();
        int lNew = lCurrTics - lTics;
        int rNew = rCurrTics - rTics;
        int fNew = fCurrTics - fTics;
@@ -148,10 +148,10 @@ public class OmniBot {
     public void setPose(float x, float y, float headingDegrees){
         setHeadingDegrees(headingDegrees);
         pose = new Pose(x, y, (float)Math.toRadians(headingDegrees));
-        lTics = back.getCurrentPosition();
+        lTics = left.getCurrentPosition();
         rTics = right.getCurrentPosition();
         fTics = front.getCurrentPosition();
-        bTics = left.getCurrentPosition();
+        bTics = back.getCurrentPosition();
     }
 
     public Pose getPose(){
@@ -167,7 +167,6 @@ public class OmniBot {
     public void closeClaw(){setClawPosition(CLAW_CLOSED);}
 
     public void setLiftPosition(int tics){
-        tics = Range.clip(tics, LIFT_MIN, LIFT_MAX);
         liftMotor.setTargetPosition(tics);
         liftMotor.setPower(1f);
     }
