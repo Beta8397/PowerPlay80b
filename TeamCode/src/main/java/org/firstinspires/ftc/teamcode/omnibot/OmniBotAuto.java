@@ -3,13 +3,39 @@ package org.firstinspires.ftc.teamcode.omnibot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.cv.Blob;
+import org.firstinspires.ftc.teamcode.cv.BlobHelper;
+import org.firstinspires.ftc.teamcode.cv.HSV_Range;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
 
-public abstract class OmniBotAuto extends LinearOpMode {
-    OmniBot bot;
+import java.util.List;
 
-    public void setBot(OmniBot bot) {
-        this.bot = bot;
+public abstract class OmniBotAuto extends LinearOpMode {
+    protected OmniBot bot = new OmniBot();
+
+    public enum SignalResult{ONE, TWO, THREE}
+    protected SignalResult signalResult = SignalResult.ONE;
+
+    HSV_Range hsvGreen = new HSV_Range(90, 150, 0.3f, 1.0f, 0.3f, 1.0f);
+
+    protected SignalResult getSignalResult(){
+        BlobHelper blobHelper = new BlobHelper(640, 480, 0, 0,
+                640, 480, 2);
+        while(opModeIsActive() && !blobHelper.updateImage()) continue;
+        List<Blob> blobs = blobHelper.getBlobs(hsvGreen);
+        if(blobs.size() == 0) return SignalResult.ONE;
+        while(blobs.size() > 1){
+            if(blobs.get(0).getNumPts() > blobs.get(1).getNumPts()){
+                blobs.remove(1);
+            } else{
+                blobs.remove(0);
+            }
+        }
+        Blob biggestBlob = blobs.get(0);
+        float angle = biggestBlob.getAngle();
+        if(angle > 0 && angle < Math.PI/3) return SignalResult.ONE;
+        if(angle < 0 && angle > -Math.PI/3) return SignalResult.THREE;
+        return SignalResult.TWO;
     }
 
     /**

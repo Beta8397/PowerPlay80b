@@ -63,6 +63,12 @@ public class TestOmni extends LinearOpMode {
                 liftTarget = liftTarget - 20;
             }else if(gamepad2.dpad_down){
                 liftTarget = liftTarget + 20;
+            } else if(gamepad2.y){
+                liftTarget = OmniBot.LIFT_HIGH;
+            } else if(gamepad2.b){
+                liftTarget = OmniBot.LIFT_MID;
+            } else if(gamepad2.a){
+                liftTarget = OmniBot.LIFT_LOW;
             }
 
             if (!adjustLiftMode) {

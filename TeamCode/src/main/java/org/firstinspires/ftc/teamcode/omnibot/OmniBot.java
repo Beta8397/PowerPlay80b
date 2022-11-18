@@ -39,6 +39,9 @@ public class OmniBot {
     public static final float MAX_TICS_PER_SEC = 2500;
     public static final int LIFT_MIN = -2600;
     public static final int LIFT_MAX = 0;
+    public static final int LIFT_HIGH = -2440;
+    public static final int LIFT_MID = -1765;
+    public static final int LIFT_LOW = -1140;
     public static final float CLAW_OPEN = 0.62f;
     public static final float CLAW_CLOSED = 0.32f;
 
