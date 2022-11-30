@@ -45,7 +45,7 @@ public class VuforiaNavigator {
             OpenGLMatrix.translation(0, 0, 0).multiplied(
                     Orientation.getRotationMatrix(AxesReference.EXTRINSIC, AxesOrder.XZX,
                             AngleUnit.DEGREES, 90, 0, 0));
-    private static OpenGLMatrix robotFromFtcCamera = DEFAULT_CAMERA_LOCATION_ON_ROBOT;
+    private static OpenGLMatrix robotFromPhoneOrCamera = DEFAULT_CAMERA_LOCATION_ON_ROBOT;
     private static final VuforiaLocalizer.CameraDirection DEFAULT_CAMERA_DIRECTION = VuforiaLocalizer.CameraDirection.BACK;
 
     /**
@@ -83,7 +83,7 @@ public class VuforiaNavigator {
     private static void internalActivate(String assetName, OpenGLMatrix[] targetLocations, OpenGLMatrix cameraLocation,
                                          VuforiaLocalizer.CameraDirection cameraDirection, WebcamName webcamName) {
         targetAssetName = assetName;
-        if (cameraLocation != null) VuforiaNavigator.robotFromFtcCamera = cameraLocation;
+        if (cameraLocation != null) VuforiaNavigator.robotFromPhoneOrCamera = cameraLocation;
 
         //Create the VuforiaLocalizer
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
@@ -112,7 +112,11 @@ public class VuforiaNavigator {
         for (int i = 0; i < targets.size(); i++) {
             if (targetLocations == null) targets.get(i).setLocation(DEFAULT_TARGET_LOCATION);
             else targets.get(i).setLocation(targetLocations[i]);
-            ((VuforiaTrackableDefaultListener) targets.get(i).getListener()).setPhoneInformation(robotFromFtcCamera, cameraDirection);
+            if (webcamName == null) {
+                ((VuforiaTrackableDefaultListener) targets.get(i).getListener()).setPhoneInformation(robotFromPhoneOrCamera, cameraDirection);
+            } else {
+                ((VuforiaTrackableDefaultListener) targets.get(i).getListener()).setCameraLocationOnRobot(webcamName, robotFromPhoneOrCamera);
+            }
         }
 
         //activate targets
@@ -150,8 +154,8 @@ public class VuforiaNavigator {
      * @return
      */
     public static OpenGLMatrix getFieldFromRobot(int i) {
-        if (robotFromFtcCamera == null) return null;
-        OpenGLMatrix ftcCameraFromRobot = robotFromFtcCamera.inverted();
+        if (robotFromPhoneOrCamera == null) return null;
+        OpenGLMatrix ftcCameraFromRobot = robotFromPhoneOrCamera.inverted();
         OpenGLMatrix ftcFieldFromTarget = targets.get(i).getFtcFieldFromTarget();
         if (ftcFieldFromTarget == null) return null;
         OpenGLMatrix targetFromFtcCamera = getTargetFromFtcCamera(i);
