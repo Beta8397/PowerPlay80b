@@ -28,20 +28,20 @@ import org.firstinspires.ftc.teamcode.util.Pose;
 public class TestVuforia extends LinearOpMode {
 
     final OpenGLMatrix cameraLocation = OpenGLMatrix.translation(0, 0, 0).multiplied(Orientation.getRotationMatrix(AxesReference.EXTRINSIC
-            , AxesOrder.XZX, AngleUnit.DEGREES, 90, 180, 0));
+            , AxesOrder.XZX, AngleUnit.DEGREES, 0, 0, 0));
 
     public void runOpMode() {
         final OpenGLMatrix[] targetPositions = new OpenGLMatrix[4];
 
         for(int i = 0; i < 4; i++) {
             targetPositions[i] = OpenGLMatrix.translation(0, 0, 0).multiplied(Orientation.getRotationMatrix(AxesReference.EXTRINSIC,
-                    AxesOrder.XYX, AngleUnit.DEGREES, 90, 0, 0));
+                    AxesOrder.XYX, AngleUnit.DEGREES, 0, 0, 0));
         }
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class,"webcam");
 
-        VuforiaNavigator.activate("FreightFrenzy", targetPositions,
-                cameraLocation, VuforiaLocalizer.CameraDirection.BACK, webcamName);
+        VuforiaNavigator.activate("PowerPlay", targetPositions,
+                cameraLocation, VuforiaLocalizer.CameraDirection.DEFAULT, webcamName);
 
         waitForStart();
 
@@ -62,6 +62,15 @@ public class TestVuforia extends LinearOpMode {
                 if(poseMatrix == null) {
                     telemetry.addData("No Target Found", "");
                 } else {
+                    telemetry.addData("POSE MATRIX","");
+                    telemetry.addData("","%.3f  %.3f  %.3f  %.3f", poseMatrix.get(0,0),
+                            poseMatrix.get(0,1), poseMatrix.get(0,2), poseMatrix.get(0,3));
+                    telemetry.addData("","%.3f  %.3f  %.3f  %.3f", poseMatrix.get(1,0),
+                            poseMatrix.get(1,1), poseMatrix.get(1,2), poseMatrix.get(1,3));
+                    telemetry.addData("","%.3f  %.3f  %.3f  %.3f", poseMatrix.get(2,0),
+                            poseMatrix.get(2,1), poseMatrix.get(2,2), poseMatrix.get(2,3));
+                    telemetry.addData("","");
+
                     Pose pose = VuforiaNavigator.getPoseFromLocationTransform(poseMatrix);
                     telemetry.addData("Pose", " x=%.1f  y=%.1f  theta=%.1f",
                             pose.x, pose.y, pose.theta * 180.0 / Math.PI);

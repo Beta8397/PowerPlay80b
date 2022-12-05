@@ -1,18 +1,28 @@
 package org.firstinspires.ftc.teamcode.omnibot;
 
+import android.graphics.Color;
+
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
+import org.firstinspires.ftc.robotcore.external.matrices.MatrixF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.i2c.BNO055Enhanced;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
+import org.firstinspires.ftc.teamcode.util.KalmanUtilities;
 import org.firstinspires.ftc.teamcode.util.Pose;
 
 
@@ -24,6 +34,12 @@ public class OmniBot {
     BNO055Enhanced imu;
     public  DcMotorEx liftMotor;
     Servo clawServo;
+    DistanceSensor frontDist;
+    DistanceSensor backDist;
+    DistanceSensor rightDist;
+    DistanceSensor leftDist;
+//    NormalizedColorSensor color;
+    ColorSensor color;
 
     float headingOffset = 0;
 
@@ -33,6 +49,7 @@ public class OmniBot {
     int bTics = 0;
 
     private Pose pose = new Pose(0, 0, 0);
+    private MatrixF covariance = new GeneralMatrixF(2,2,new float[]{0,0,0,0});
 
     public static final float TICS_PER_RADIAN = 276.1f; // Empiric Measurement
     public static final float TICS_PER_INCH = 44.2f;    // Empiric Measurement
@@ -44,6 +61,9 @@ public class OmniBot {
     public static final int LIFT_LOW = -1140;
     public static final float CLAW_OPEN = 0.62f;
     public static final float CLAW_CLOSED = 0.32f;
+    public static final float HEADING_VARIANCE = (float)Math.toRadians(2) * (float)Math.toRadians(2);
+    public static final float POSITION_VARIANCE_COEFF = 0.04f;
+
 
     public void init(HardwareMap hwmap){
         back = hwmap.get(DcMotorEx.class, "back");
@@ -70,6 +90,8 @@ public class OmniBot {
         parameters.loggingEnabled = false;
         parameters.loggingTag = "IMU";
 
+        imu.initialize(parameters);
+
         liftMotor = hwmap.get(DcMotorEx.class, "liftMotor");
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setTargetPosition(0);
@@ -77,8 +99,16 @@ public class OmniBot {
 
         clawServo = hwmap.get(Servo.class, "clawServo");
 
-        imu.initialize(parameters);
+        frontDist = hwmap.get(DistanceSensor.class,"frontDist");
+        backDist = hwmap.get(DistanceSensor.class,"backDist");
+        rightDist = hwmap.get(DistanceSensor.class,"rightDist");
+        leftDist = hwmap.get(DistanceSensor.class,"leftDist");
+//        color = hwmap.get(NormalizedColorSensor.class,"color");
+//        color.setGain(100);
+        color = hwmap.get(ColorSensor.class,"color");
+        color.enableLed(true);
     }
+
     public void setDrivePower(float px, float py, float pa) {
         float pL = py + 0 - pa;
         float pR = py + 0 + pa;
@@ -142,6 +172,13 @@ public class OmniBot {
        float avgHeading = AngleUtil.normalizeRadians(pose.theta + headingChange / 2);
        float sin = (float)Math.sin(avgHeading);
        float cos = (float)Math.cos(avgHeading);
+
+       float varXR = dXR * POSITION_VARIANCE_COEFF;
+       float varYR = dYR * POSITION_VARIANCE_COEFF;
+       float varTheta = HEADING_VARIANCE;
+       MatrixF Q = KalmanUtilities.QMatrix(dXR, dYR, varXR, varYR, varTheta, sin, cos);
+       covariance.add(Q);
+
        float x = pose.x + dXR * sin + dYR * cos;
        float y = pose.y - dXR * cos + dYR * sin;
        pose = new Pose(x, y, newHeading);
@@ -157,9 +194,15 @@ public class OmniBot {
         bTics = back.getCurrentPosition();
     }
 
+    public void setCovariance(MatrixF cov){
+        covariance = cov;
+    }
+
     public Pose getPose(){
         return pose;
     }
+
+    public MatrixF getCovariance(){ return covariance; }
 
     public void setClawPosition(float pos){
         clawServo.setPosition(pos);
@@ -179,6 +222,40 @@ public class OmniBot {
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setTargetPosition(0);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public float getFrontDistance(){
+        return (float)frontDist.getDistance(DistanceUnit.INCH);
+    }
+    public float getBackDistance(){
+        return (float)backDist.getDistance(DistanceUnit.INCH);
+    }
+    public float getRightDistance(){
+        return (float)rightDist.getDistance(DistanceUnit.INCH);
+    }
+    public float getLeftDistance(){
+        return (float)leftDist.getDistance(DistanceUnit.INCH);
+    }
+//    public NormalizedRGBA getRGBA() {
+//        return color.getNormalizedColors();
+//    }
+    public float[] getHSV() {
+//        NormalizedRGBA rgba = getRGBA();
+//        int col = rgba.toColor();
+//        int red = col & 0xFF;
+//        int green = (col >> 8) & 0xFF;
+//        int blue = (col >> 16) & 0xFF;
+        float[] result = new float[3];
+        Color.RGBToHSV(color.red(),color.green(),color.blue(),result);
+        return result;
+    }
+    public int[] getRGB() {
+//        NormalizedRGBA rgba = getRGBA();
+//        int col = rgba.toColor();
+//        int red = col & 0xFF;
+//        int green = (col >> 8) & 0xFF;
+//        int blue = (col >> 16) & 0xFF;
+       return new int[] {color.red(),color.green(),color.blue()};
     }
 
 }
