@@ -40,7 +40,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
             RIGHT_TARGET_LOCATION, // Blue Right, aka Blue Audience side
             LEFT_TARGET_LOCATION // Blue Left, aka Blue Back wall
     };
-    
+
 
     protected SignalResult getSignalResult(){
         BlobHelper blobHelper = new BlobHelper(640, 480, 0, 0,
