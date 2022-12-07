@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.omnibot;
 
 import android.graphics.Color;
 
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -24,6 +25,8 @@ import org.firstinspires.ftc.teamcode.i2c.BNO055Enhanced;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
 import org.firstinspires.ftc.teamcode.util.KalmanUtilities;
 import org.firstinspires.ftc.teamcode.util.Pose;
+
+import java.util.List;
 
 
 public class OmniBot {
@@ -66,6 +69,9 @@ public class OmniBot {
 
 
     public void init(HardwareMap hwmap){
+        List<LynxModule> allHubs = hwmap.getAll(LynxModule.class);
+        for (LynxModule module: allHubs) { module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);}
+
         back = hwmap.get(DcMotorEx.class, "back");
         right = hwmap.get(DcMotorEx.class, "right");
         front = hwmap.get(DcMotorEx.class, "front");
@@ -128,6 +134,44 @@ public class OmniBot {
         right.setPower(pR);
         left.setPower(pL);
     }
+    public void setDrivePower(float px, float py, float pa, float maxVelChange) {
+
+        float pLold = (float)left.getPower();
+        float pRold = (float)right.getPower();
+        float pBold = (float)back.getPower();
+        float pFold = (float)front.getPower();
+
+        float pXold = 0.5f * (pLold + pRold);
+        float pYold = 0.5f * (pBold + pFold);
+        float pLinearOld = (float)Math.hypot(pXold, pYold);
+        float pLinearRequested = (float)Math.hypot(px, py);
+
+        if (Math.abs(pLinearRequested) > 0 && pLinearRequested > pLinearOld + maxVelChange){
+            float pLinearNew = pLinearOld + maxVelChange;
+            px *= pLinearNew / pLinearRequested;
+            py *= pLinearNew / pLinearRequested;
+            pa *= pLinearNew / pLinearRequested;
+        }
+
+        float pL = py + 0 - pa;
+        float pR = py + 0 + pa;
+        float pB = 0 + px + pa;
+        float pF = 0 + px - pa;
+        float max = Math.max(Math.abs(pL), Math.abs(pR));
+        max = Math.max(max, Math.abs(pB));
+        max = Math.max(max, Math.abs(pF));
+        if(max > 1){
+            pL = pL/max;
+            pR /= max;
+            pB /= max;
+            pF /= max;
+        }
+        back.setPower(pB);
+        front.setPower(pF);
+        right.setPower(pR);
+        left.setPower(pL);
+    }
+
 
     public void setDriveSpeed(float vx, float vy, float va){
         float px = vx * TICS_PER_INCH / MAX_TICS_PER_SEC;

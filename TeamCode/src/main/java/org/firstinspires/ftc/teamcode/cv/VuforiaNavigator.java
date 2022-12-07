@@ -44,9 +44,9 @@ public class VuforiaNavigator {
     public static final OpenGLMatrix DEFAULT_CAMERA_LOCATION_ON_ROBOT =
             OpenGLMatrix.translation(0, 0, 0).multiplied(
                     Orientation.getRotationMatrix(AxesReference.EXTRINSIC, AxesOrder.XZX,
-                            AngleUnit.DEGREES, 90, 0, 0));
+                            AngleUnit.DEGREES, 0, 0, 0));
     private static OpenGLMatrix robotFromPhoneOrCamera = DEFAULT_CAMERA_LOCATION_ON_ROBOT;
-    private static final VuforiaLocalizer.CameraDirection DEFAULT_CAMERA_DIRECTION = VuforiaLocalizer.CameraDirection.BACK;
+    private static final VuforiaLocalizer.CameraDirection DEFAULT_CAMERA_DIRECTION = VuforiaLocalizer.CameraDirection.UNKNOWN;
 
     /**
      * Create an instance of VuforiaLocalizer, load the Trackables (using default location for each Trackable).
@@ -154,15 +154,21 @@ public class VuforiaNavigator {
      * @return
      */
     public static OpenGLMatrix getFieldFromRobot(int i) {
-        if (robotFromPhoneOrCamera == null) return null;
-        OpenGLMatrix ftcCameraFromRobot = robotFromPhoneOrCamera.inverted();
+//        if (robotFromPhoneOrCamera == null) return null;
+//        OpenGLMatrix ftcCameraFromRobot = robotFromPhoneOrCamera.inverted();
+//        OpenGLMatrix ftcFieldFromTarget = targets.get(i).getFtcFieldFromTarget();
+//        if (ftcFieldFromTarget == null) return null;
+//        OpenGLMatrix targetFromFtcCamera = getTargetFromFtcCamera(i);
+//        if (targetFromFtcCamera == null) return null;
+//        return ftcFieldFromTarget
+//                .multiplied(targetFromFtcCamera)
+//                .multiplied(ftcCameraFromRobot);
         OpenGLMatrix ftcFieldFromTarget = targets.get(i).getFtcFieldFromTarget();
-        if (ftcFieldFromTarget == null) return null;
-        OpenGLMatrix targetFromFtcCamera = getTargetFromFtcCamera(i);
-        if (targetFromFtcCamera == null) return null;
-        return ftcFieldFromTarget
-                .multiplied(targetFromFtcCamera)
-                .multiplied(ftcCameraFromRobot);
+        if (robotFromPhoneOrCamera == null || ftcFieldFromTarget == null) {
+            return null;
+        } else {
+            return ((VuforiaTrackableDefaultListener) targets.get(i).getListener()).getFtcFieldFromRobot();
+        }
     }
 
 

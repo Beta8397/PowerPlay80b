@@ -18,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 import org.firstinspires.ftc.teamcode.util.Pose;
 
 /**
@@ -27,16 +28,16 @@ import org.firstinspires.ftc.teamcode.util.Pose;
 @Autonomous(name="TestVuforia", group="Test")
 public class TestVuforia extends LinearOpMode {
 
-    final OpenGLMatrix cameraLocation = OpenGLMatrix.translation(0, 0, 0).multiplied(Orientation.getRotationMatrix(AxesReference.EXTRINSIC
-            , AxesOrder.XZX, AngleUnit.DEGREES, 0, 0, 0));
+    final OpenGLMatrix cameraLocation = OpenGLMatrix.translation(0, 0, 0).multiplied(Orientation.getRotationMatrix(AxesReference.INTRINSIC
+            , AxesOrder.ZXZ, AngleUnit.DEGREES, 180, 90, 0));
 
     public void runOpMode() {
-        final OpenGLMatrix[] targetPositions = new OpenGLMatrix[4];
+        final OpenGLMatrix[] targetPositions = OmniBotAuto.TARGET_LOCATIONS;
 
-        for(int i = 0; i < 4; i++) {
-            targetPositions[i] = OpenGLMatrix.translation(0, 0, 0).multiplied(Orientation.getRotationMatrix(AxesReference.EXTRINSIC,
-                    AxesOrder.XYX, AngleUnit.DEGREES, 0, 0, 0));
-        }
+//        for(int i = 0; i < 4; i++) {
+//            targetPositions[i] = OpenGLMatrix.translation(0, 0, 0).multiplied(Orientation.getRotationMatrix(AxesReference.EXTRINSIC,
+//                    AxesOrder.XYX, AngleUnit.DEGREES, 0, 0, 0));
+//        }
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class,"webcam");
 

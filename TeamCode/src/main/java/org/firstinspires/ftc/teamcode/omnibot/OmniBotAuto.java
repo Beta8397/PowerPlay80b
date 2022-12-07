@@ -1,8 +1,12 @@
 package org.firstinspires.ftc.teamcode.omnibot;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
 import org.firstinspires.ftc.robotcore.external.Predicate;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.cv.Blob;
 import org.firstinspires.ftc.teamcode.cv.BlobHelper;
 import org.firstinspires.ftc.teamcode.cv.HSV_Range;
@@ -21,13 +25,32 @@ public abstract class OmniBotAuto extends LinearOpMode {
     protected SignalResult signalResult = SignalResult.ONE;
 
     public enum Quadrant{ RED_RIGHT, RED_LEFT, BLUE_RIGHT, BLUE_LEFT }
+
     public enum HeadingIndex{ H_0, H_90, H_NEG_90, H_180 }
 
-    HSV_Range hsvGreen = new HSV_Range(90, 150, 0.3f, 1.0f, 0.3f, 1.0f);
+    HSV_Range hsvGreen = new HSV_Range(90, 150, 0.15f, 1.0f, 0.3f, 1.0f);
+
+    /*
+    VUFORIA TARGET POSITIONS
+     */
+    protected static final float TARGET_X = 34.75f * 25.4f; //mm
+    protected static final float LEFT_TARGET_Y = 141.0f * 25.4f; //mm  (Note that right target Y is 0)
+    protected static final OpenGLMatrix RIGHT_TARGET_LOCATION = OpenGLMatrix.translation(TARGET_X, 0,0)
+            .multiplied(Orientation.getRotationMatrix(AxesReference.INTRINSIC, AxesOrder.ZXZ,
+                    AngleUnit.DEGREES, 180, 90, 0));
+    protected static final OpenGLMatrix LEFT_TARGET_LOCATION = OpenGLMatrix.translation(TARGET_X, LEFT_TARGET_Y, 0)
+            .multiplied(Orientation.getRotationMatrix(AxesReference.INTRINSIC, AxesOrder.XYZ,
+                    AngleUnit.DEGREES, 90, 0, 0));
+    public static final OpenGLMatrix[] TARGET_LOCATIONS = new OpenGLMatrix[]{
+            LEFT_TARGET_LOCATION, // Red Left, aka Red Audience side
+            RIGHT_TARGET_LOCATION, // Red Right, aka Red Back wall
+            RIGHT_TARGET_LOCATION, // Blue Right, aka Blue Audience side
+            LEFT_TARGET_LOCATION // Blue Left, aka Blue Back wall
+    };
 
     protected SignalResult getSignalResult(){
-        BlobHelper blobHelper = new BlobHelper(640, 480, 0, 0,
-                640, 480, 2);
+        BlobHelper blobHelper = new BlobHelper(640, 480, 120, 0,
+                400, 320, 1);
         while(opModeIsActive() && !blobHelper.updateImage()) continue;
         List<Blob> blobs = blobHelper.getBlobs(hsvGreen);
         if(blobs.size() == 0) return SignalResult.ONE;
