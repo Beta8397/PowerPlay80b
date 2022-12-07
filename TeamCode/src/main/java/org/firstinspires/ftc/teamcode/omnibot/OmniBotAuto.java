@@ -21,7 +21,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
     public enum SignalResult{ONE, TWO, THREE}
     protected SignalResult signalResult = SignalResult.ONE;
 
-    HSV_Range hsvGreen = new HSV_Range(90, 150, 0.3f, 1.0f, 0.3f, 1.0f);
+    HSV_Range hsvGreen = new HSV_Range(90, 150, 0.15f, 1.0f, 0.3f, 1.0f);
 
     /*
     VUFORIA TARGET POSITIONS
@@ -43,8 +43,8 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
 
     protected SignalResult getSignalResult(){
-        BlobHelper blobHelper = new BlobHelper(640, 480, 0, 0,
-                640, 480, 2);
+        BlobHelper blobHelper = new BlobHelper(640, 480, 120, 0,
+                400, 320, 1);
         while(opModeIsActive() && !blobHelper.updateImage()) continue;
         List<Blob> blobs = blobHelper.getBlobs(hsvGreen);
         if(blobs.size() == 0) return SignalResult.ONE;

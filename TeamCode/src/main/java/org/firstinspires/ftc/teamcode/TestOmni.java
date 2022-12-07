@@ -37,9 +37,10 @@ public class TestOmni extends LinearOpMode {
             telemetry.addData("Pose", "X = %.1f Y = %.1f  H = %.1f",
                     bot.getPose().x, bot.getPose().y, Math.toDegrees(bot.getPose().theta));
 
+
             // Treat chassis as a diamond
-            float pwxprime = gamepad1.left_stick_x/2;
-            float pwyprime = -gamepad1.left_stick_y/2;
+            float pwxprime = gamepad1.left_stick_x/2.4f;
+            float pwyprime = -gamepad1.left_stick_y/2.4f;
             float pwx = (pwxprime - pwyprime)/(float)Math.sqrt(2);
             float pwy = (pwxprime + pwyprime)/(float)Math.sqrt(2);
 
@@ -47,7 +48,7 @@ public class TestOmni extends LinearOpMode {
 //            float pwx = +gamepad1.left_stick_y/2;
 //            float pwy = +gamepad1.left_stick_x/2;
 
-            float pwa = (gamepad1.left_trigger - gamepad1.right_trigger)/2;
+            float pwa = (gamepad1.left_trigger - gamepad1.right_trigger)/2.8f;
             bot.setDrivePower(pwx, pwy, pwa);
 
             // Handle AdjustLiftMode
