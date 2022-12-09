@@ -65,7 +65,7 @@ public class OmniBot {
     public static final float CLAW_OPEN = 0.62f;
     public static final float CLAW_CLOSED = 0.32f;
     public static final float HEADING_VARIANCE = (float)Math.toRadians(2) * (float)Math.toRadians(2);
-    public static final float POSITION_VARIANCE_COEFF = 0.04f;
+    public static final float POSITION_VARIANCE_COEFF = 0.16f;
 
 
     public void init(HardwareMap hwmap){
@@ -236,6 +236,16 @@ public class OmniBot {
         rTics = right.getCurrentPosition();
         fTics = front.getCurrentPosition();
         bTics = back.getCurrentPosition();
+    }
+
+    /**
+     * This is used only to adjust pose after using Kalman filter to compute an adjusted pose
+     * based on one or more measurements.
+     * @param x
+     * @param y
+     */
+    public void adjustPose(float x, float y){
+        pose = new Pose(x, y, pose.theta);
     }
 
     public void setCovariance(MatrixF cov){

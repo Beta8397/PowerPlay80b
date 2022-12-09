@@ -34,30 +34,49 @@ public class KalmanDistanceUpdater implements KalmanMeasurementUpdater{
     public Pose updatePose(Pose poseMinus, MatrixF covMinus){
         if (sensX == null && sensY == null) return poseMinus;
 
+        float xDist = 0;
+        float yDist = 0;
+        boolean validX = false;
+        boolean validY = false;
+
+        if (sensX != null) {
+            xDist = (float)sensX.getDistance(DistanceUnit.INCH);
+            validX = xValid.test(xDist);
+        }
+        if (sensY != null) {
+            yDist = (float)sensY.getDistance(DistanceUnit.INCH);
+            validY = yValid.test(yDist);
+        }
+
         if (sensY == null){
-            float xDist = (float)sensX.getDistance(DistanceUnit.INCH);
-            if (!xValid.test(xDist)) return poseMinus;
+            if (!validX) return poseMinus;
             float xMeas = xFromDist.apply(xDist);
             float xVar = DIST_VAR_COEFF * xDist * xDist;
             return KalmanUtilities.applyXMeasurement(poseMinus, covMinus, xMeas, xVar);
         } else if (sensX == null) {
-            float yDist = (float)sensY.getDistance(DistanceUnit.INCH);
-            if (!yValid.test(yDist)) return poseMinus;
+            if (!validY) return poseMinus;
             float yMeas = xFromDist.apply(yDist);
             float yVar = DIST_VAR_COEFF * yDist * yDist;
             return KalmanUtilities.applyXMeasurement(poseMinus, covMinus, yMeas, yVar);
         } else {
-            float xDist = (float)sensX.getDistance(DistanceUnit.INCH);
-            if (!xValid.test(xDist)) return poseMinus;
-            float xMeas = xFromDist.apply(xDist);
-            float xVar = DIST_VAR_COEFF * xDist * xDist;
-
-            float yDist = (float)sensY.getDistance(DistanceUnit.INCH);
-            if (!yValid.test(yDist)) return poseMinus;
-            float yMeas = xFromDist.apply(yDist);
-            float yVar = DIST_VAR_COEFF * yDist * yDist;
-
-            return KalmanUtilities.applyXYMeasurement(poseMinus, covMinus, xMeas, xVar, yMeas, yVar);
+            if (validX && !validY) {
+                float xMeas = xFromDist.apply(xDist);
+                float xVar = DIST_VAR_COEFF * xDist * xDist;
+                return KalmanUtilities.applyXMeasurement(poseMinus, covMinus, xMeas, xVar);
+            } else if (validY && !validX) {
+                float yMeas = xFromDist.apply(yDist);
+                float yVar = DIST_VAR_COEFF * yDist * yDist;
+                return KalmanUtilities.applyYMeasurement(poseMinus, covMinus, yMeas, yVar);
+            } else if (validX && validY) {
+                float xMeas = xFromDist.apply(xDist);
+                float xVar = DIST_VAR_COEFF * xDist * xDist;
+                float yMeas = xFromDist.apply(yDist);
+                float yVar = DIST_VAR_COEFF * yDist * yDist;
+                return KalmanUtilities.applyXYMeasurement(poseMinus, covMinus, xMeas, xVar, yMeas, yVar);
+            }
+            else {
+                return poseMinus;
+            }
         }
 
     }

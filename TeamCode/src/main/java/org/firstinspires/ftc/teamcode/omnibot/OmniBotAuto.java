@@ -148,8 +148,8 @@ public abstract class OmniBotAuto extends LinearOpMode {
         private PowerPlayDistUpdater(Quadrant quadrant, HeadingIndex index, boolean measX, boolean measY){
 
             xFromDist = (d) -> d + 6;
-            xValid = (d) -> d>3 && d<48;
-            yValid = (d) -> d>3 && d<48;
+            xValid = (d) -> d>3 && d<60;
+            yValid = (d) -> d>3 && d<60;
 
             if (quadrant == Quadrant.RED_RIGHT || quadrant == Quadrant.BLUE_RIGHT){
                 yFromDist = (d) -> d + 6;
