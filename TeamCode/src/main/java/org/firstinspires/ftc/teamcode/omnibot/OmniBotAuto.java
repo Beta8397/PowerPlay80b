@@ -139,13 +139,13 @@ public abstract class OmniBotAuto extends LinearOpMode {
     public class PowerPlayDistUpdater extends KalmanDistanceUpdater {
 
         public PowerPlayDistUpdater(Quadrant quadrant, HeadingIndex index, boolean measX,
-                                    boolean measY, Predicate xValid, Predicate yValid){
+                                    boolean measY, Predicate<Float> xValid, Predicate<Float> yValid){
             this(quadrant, index, measX, measY);
             this.xValid = xValid;
             this.yValid = yValid;
         }
 
-        private PowerPlayDistUpdater(Quadrant quadrant, HeadingIndex index, boolean measX, boolean measY){
+        public PowerPlayDistUpdater(Quadrant quadrant, HeadingIndex index, boolean measX, boolean measY){
 
             xFromDist = (d) -> d + 6;
             xValid = (d) -> d>3 && d<60;

@@ -37,10 +37,10 @@ public class OmniBot {
     BNO055Enhanced imu;
     public  DcMotorEx liftMotor;
     Servo clawServo;
-    DistanceSensor frontDist;
-    DistanceSensor backDist;
-    DistanceSensor rightDist;
-    DistanceSensor leftDist;
+    public DistanceSensor frontDist;
+    public DistanceSensor backDist;
+    public DistanceSensor rightDist;
+    public DistanceSensor leftDist;
 //    NormalizedColorSensor color;
     ColorSensor color;
 
@@ -217,8 +217,8 @@ public class OmniBot {
        float sin = (float)Math.sin(avgHeading);
        float cos = (float)Math.cos(avgHeading);
 
-       float varXR = dXR * POSITION_VARIANCE_COEFF;
-       float varYR = dYR * POSITION_VARIANCE_COEFF;
+       float varXR = Math.abs(dXR) * POSITION_VARIANCE_COEFF;
+       float varYR = Math.abs(dYR) * POSITION_VARIANCE_COEFF;
        float varTheta = HEADING_VARIANCE;
        MatrixF Q = KalmanUtilities.QMatrix(dXR, dYR, varXR, varYR, varTheta, sin, cos);
        covariance.add(Q);
