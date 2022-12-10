@@ -23,7 +23,7 @@ public class TestRevColorV2 extends LinearOpMode {
     public void runOpMode(){
         cs = hardwareMap.get(RevColorV2.class, "color");
 
-        cs.setHardwareGain(AMSColorSensor.Gain.GAIN_16);
+        cs.setHardwareGain(AMSColorSensor.Gain.GAIN_64);
         cs.setGain(2);
 
         telemetry.addData("Sensor Class", cs.getClass().getName());
