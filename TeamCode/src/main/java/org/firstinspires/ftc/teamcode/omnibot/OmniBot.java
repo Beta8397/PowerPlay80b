@@ -37,10 +37,10 @@ public class OmniBot {
     BNO055Enhanced imu;
     public  DcMotorEx liftMotor;
     Servo clawServo;
-    DistanceSensor frontDist;
-    DistanceSensor backDist;
-    DistanceSensor rightDist;
-    DistanceSensor leftDist;
+    public DistanceSensor frontDist;
+    public DistanceSensor backDist;
+    public DistanceSensor rightDist;
+    public DistanceSensor leftDist;
 //    NormalizedColorSensor color;
     ColorSensor color;
 
@@ -65,7 +65,7 @@ public class OmniBot {
     public static final float CLAW_OPEN = 0.62f;
     public static final float CLAW_CLOSED = 0.32f;
     public static final float HEADING_VARIANCE = (float)Math.toRadians(2) * (float)Math.toRadians(2);
-    public static final float POSITION_VARIANCE_COEFF = 0.04f;
+    public static final float POSITION_VARIANCE_COEFF = 0.16f;
 
 
     public void init(HardwareMap hwmap){
@@ -217,8 +217,8 @@ public class OmniBot {
        float sin = (float)Math.sin(avgHeading);
        float cos = (float)Math.cos(avgHeading);
 
-       float varXR = dXR * POSITION_VARIANCE_COEFF;
-       float varYR = dYR * POSITION_VARIANCE_COEFF;
+       float varXR = Math.abs(dXR) * POSITION_VARIANCE_COEFF;
+       float varYR = Math.abs(dYR) * POSITION_VARIANCE_COEFF;
        float varTheta = HEADING_VARIANCE;
        MatrixF Q = KalmanUtilities.QMatrix(dXR, dYR, varXR, varYR, varTheta, sin, cos);
        covariance.add(Q);
@@ -236,6 +236,16 @@ public class OmniBot {
         rTics = right.getCurrentPosition();
         fTics = front.getCurrentPosition();
         bTics = back.getCurrentPosition();
+    }
+
+    /**
+     * This is used only to adjust pose after using Kalman filter to compute an adjusted pose
+     * based on one or more measurements.
+     * @param x
+     * @param y
+     */
+    public void adjustPose(float x, float y){
+        pose = new Pose(x, y, pose.theta);
     }
 
     public void setCovariance(MatrixF cov){

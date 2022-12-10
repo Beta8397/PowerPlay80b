@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.omnibot;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import org.firstinspires.ftc.robotcore.external.Predicate;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -12,14 +12,22 @@ import org.firstinspires.ftc.teamcode.cv.Blob;
 import org.firstinspires.ftc.teamcode.cv.BlobHelper;
 import org.firstinspires.ftc.teamcode.cv.HSV_Range;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
+import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 
 import java.util.List;
 
 public abstract class OmniBotAuto extends LinearOpMode {
+
+    public static float YMAX = 141;
+
     protected OmniBot bot = new OmniBot();
 
     public enum SignalResult{ONE, TWO, THREE}
     protected SignalResult signalResult = SignalResult.ONE;
+
+    public enum Quadrant{ RED_RIGHT, RED_LEFT, BLUE_RIGHT, BLUE_LEFT }
+
+    public enum HeadingIndex{ H_0, H_90, H_NEG_90, H_180 }
 
     HSV_Range hsvGreen = new HSV_Range(90, 150, 0.15f, 1.0f, 0.3f, 1.0f);
 
@@ -40,7 +48,6 @@ public abstract class OmniBotAuto extends LinearOpMode {
             RIGHT_TARGET_LOCATION, // Blue Right, aka Blue Audience side
             LEFT_TARGET_LOCATION // Blue Left, aka Blue Back wall
     };
-
 
     protected SignalResult getSignalResult(){
         BlobHelper blobHelper = new BlobHelper(640, 480, 120, 0,
@@ -128,4 +135,64 @@ public abstract class OmniBotAuto extends LinearOpMode {
         bot.setDriveSpeed(0, 0,0);
         bot.updateOdometry();
     }
+
+    public class PowerPlayDistUpdater extends KalmanDistanceUpdater {
+
+        public PowerPlayDistUpdater(Quadrant quadrant, HeadingIndex index, boolean measX,
+                                    boolean measY, Predicate<Float> xValid, Predicate<Float> yValid){
+            this(quadrant, index, measX, measY);
+            this.xValid = xValid;
+            this.yValid = yValid;
+        }
+
+        public PowerPlayDistUpdater(Quadrant quadrant, HeadingIndex index, boolean measX, boolean measY){
+
+            xFromDist = (d) -> d + 6;
+            xValid = (d) -> d>3 && d<60;
+            yValid = (d) -> d>3 && d<60;
+
+            if (quadrant == Quadrant.RED_RIGHT || quadrant == Quadrant.BLUE_RIGHT){
+                yFromDist = (d) -> d + 6;
+                switch (index) {
+                    case H_0:
+                        if (measX) sensX = bot.backDist;
+                        if (measY) sensY = bot.rightDist;
+                        break;
+                    case H_90:
+                        if (measX) sensX = bot.leftDist;
+                        if (measY) sensY = bot.backDist;
+                        break;
+                    case H_NEG_90:
+                        if (measX) sensX = bot.rightDist;
+                        if (measY) sensY = bot.frontDist;
+                        break;
+                    case H_180:
+                        if (measX) sensX = bot.frontDist;
+                        if (measY) sensY = bot.leftDist;
+                        break;
+                }
+            } else {
+                yFromDist = (d) -> YMAX - d - 6;
+                switch (index) {
+                    case H_0:
+                        if (measX) sensX = bot.backDist;
+                        if (measY) sensY = bot.leftDist;
+                        break;
+                    case H_90:
+                        if (measX) sensX = bot.leftDist;
+                        if (measY) sensY = bot.frontDist;
+                        break;
+                    case H_NEG_90:
+                        if (measX) sensX = bot.rightDist;
+                        if (measY) sensY = bot.backDist;
+                        break;
+                    case H_180:
+                        if (measX) sensX = bot.frontDist;
+                        if (measY) sensY = bot.rightDist;
+                        break;
+                }
+            }
+        }
+    }
+
 }
