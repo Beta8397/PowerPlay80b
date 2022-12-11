@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.cv.BlobHelper;
 import org.firstinspires.ftc.teamcode.cv.HSV_Range;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
+import org.firstinspires.ftc.teamcode.util.KalmanMeasurementUpdater;
+import org.firstinspires.ftc.teamcode.util.Pose;
 
 import java.util.List;
 
@@ -29,7 +31,11 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
     public enum HeadingIndex{ H_0, H_90, H_NEG_90, H_180 }
 
-    HSV_Range hsvGreen = new HSV_Range(90, 150, 0.15f, 1.0f, 0.3f, 1.0f);
+    HSV_Range hsvGreen = new HSV_Range(80, 120, 0.25f, 1.0f, 0.3f, 1.0f);
+
+    public interface Pred{
+        boolean test();
+    }
 
     /*
     VUFORIA TARGET POSITIONS
@@ -133,6 +139,95 @@ public abstract class OmniBotAuto extends LinearOpMode {
             bot.setDriveSpeed(vx, vy, va);
         }
         bot.setDriveSpeed(0, 0,0);
+        bot.updateOdometry();
+    }
+
+
+
+    protected void driveToPosition(float vMax, float vMin, float targetX, float targetY, float targetThetaDegrees,
+                                   float cp, float tolerance, KalmanMeasurementUpdater updater) {
+        float headingTargetRadians = targetThetaDegrees * (float)Math.PI / 180;
+
+        while (opModeIsActive()) {
+            bot.updateOdometry();
+
+            Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
+            bot.adjustPose(updatedPose.x, updatedPose.y);
+
+            float xError = targetX - bot.getPose().x;
+            float yError = targetY - bot.getPose().y;
+            float thetaError = (float)AngleUtil.normalizeRadians(headingTargetRadians - bot.getPose().theta);
+
+            if(Math.hypot(xError, yError) < tolerance) break;
+
+            float sinTheta = (float)Math.sin(bot.getPose().theta);
+            float cosTheta = (float)Math.cos(bot.getPose().theta);
+
+            float xErrorRobot = xError * sinTheta - yError * cosTheta;
+            float yErrorRobot = xError * cosTheta + yError * sinTheta;
+
+            float vx = xErrorRobot * cp;
+            float vy = yErrorRobot * cp;
+            float v = (float)Math.hypot(vx, vy);
+            if(v > vMax) {
+                vx *= vMax / v;
+                vy *= vMax / v;
+            } else if(v < vMin) {
+                vx *= vMin / v;
+                vy *= vMin / v;
+            }
+            float va = 1.0f * thetaError;
+            bot.setDriveSpeed(vx, vy, va);
+        }
+        bot.setDriveSpeed(0, 0,0);
+        bot.updateOdometry();
+    }
+
+    public void driveDirection(float speed, float directionDegrees, float targetHeading, float cp,
+                          Pred finished){
+        float directionRadians = (float)Math.toRadians(directionDegrees);
+        float targetHeadingRadians = (float)Math.toRadians(targetHeading);
+        while(opModeIsActive()){
+            bot.updateOdometry();
+            if(finished.test()){
+                break;
+            }
+            float thetaError = (float)AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
+            float sinTheta = (float)Math.sin(bot.getPose().theta);
+            float cosTheta = (float)Math.cos(bot.getPose().theta);
+            float va = 1.0f * thetaError;
+            float vx = speed * (float)Math.cos(directionRadians);
+            float vy = speed * (float)Math.sin(directionRadians);
+            float vxr = vx * sinTheta - vy * cosTheta;
+            float vyr = vx * cosTheta + vy * sinTheta;
+            bot.setDriveSpeed(vxr, vyr, va);
+        }
+        bot.setDriveSpeed(0, 0, 0);
+        bot.updateOdometry();
+    }
+
+    public void driveDirection(float speed, float directionDegrees, float targetHeading, float cp,
+                               KalmanMeasurementUpdater updater, Pred finished){
+        float directionRadians = (float)Math.toRadians(directionDegrees);
+        float targetHeadingRadians = (float)Math.toRadians(targetHeading);
+        while(opModeIsActive()){
+            bot.updateOdometry();
+            Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
+            bot.adjustPose(updatedPose.x, updatedPose.y);
+            if(finished.test()){
+                break;
+            }
+            float thetaError = (float)AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
+            float sinTheta = (float)Math.sin(bot.getPose().theta);
+            float cosTheta = (float)Math.cos(bot.getPose().theta);
+            float va = 1.0f * thetaError;
+            float vx = speed * (float)Math.cos(directionRadians);
+            float vy = speed * (float)Math.sin(directionRadians);
+            float vxr = vx * sinTheta - vy * cosTheta;
+            float vyr = vx * cosTheta + vy * sinTheta;
+            bot.setDriveSpeed(vxr, vyr, va);
+        }
+        bot.setDriveSpeed(0, 0, 0);
         bot.updateOdometry();
     }
 

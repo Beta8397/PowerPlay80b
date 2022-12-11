@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.omnibot;
 
 import android.graphics.Color;
 
+import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,6 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.i2c.BNO055Enhanced;
+import org.firstinspires.ftc.teamcode.i2c.RevColorV2;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
 import org.firstinspires.ftc.teamcode.util.KalmanUtilities;
 import org.firstinspires.ftc.teamcode.util.Pose;
@@ -42,7 +44,7 @@ public class OmniBot {
     public DistanceSensor rightDist;
     public DistanceSensor leftDist;
 //    NormalizedColorSensor color;
-    ColorSensor color;
+    RevColorV2 color;
 
     float headingOffset = 0;
 
@@ -111,8 +113,9 @@ public class OmniBot {
         leftDist = hwmap.get(DistanceSensor.class,"leftDist");
 //        color = hwmap.get(NormalizedColorSensor.class,"color");
 //        color.setGain(100);
-        color = hwmap.get(ColorSensor.class,"color");
-        color.enableLed(true);
+        color = hwmap.get(RevColorV2.class,"color");
+        color.setHardwareGain(AMSColorSensor.Gain.GAIN_64);
+        color.setGain(2);
     }
 
     public void setDrivePower(float px, float py, float pa) {
@@ -294,22 +297,16 @@ public class OmniBot {
 //        return color.getNormalizedColors();
 //    }
     public float[] getHSV() {
-//        NormalizedRGBA rgba = getRGBA();
-//        int col = rgba.toColor();
-//        int red = col & 0xFF;
-//        int green = (col >> 8) & 0xFF;
-//        int blue = (col >> 16) & 0xFF;
+        NormalizedRGBA rgba = color.getNormalizedColors();
+        int col = rgba.toColor();
         float[] result = new float[3];
-        Color.RGBToHSV(color.red(),color.green(),color.blue(),result);
+        Color.RGBToHSV(Color.red(col),Color.green(col),Color.blue(col),result);
         return result;
     }
     public int[] getRGB() {
-//        NormalizedRGBA rgba = getRGBA();
-//        int col = rgba.toColor();
-//        int red = col & 0xFF;
-//        int green = (col >> 8) & 0xFF;
-//        int blue = (col >> 16) & 0xFF;
-       return new int[] {color.red(),color.green(),color.blue()};
+       NormalizedRGBA rgba = color.getNormalizedColors();
+       int col = rgba.toColor();
+       return new int[] {Color.red(col),Color.green(col),Color.blue(col)};
     }
 
 }
