@@ -3,9 +3,13 @@ package org.firstinspires.ftc.teamcode.omnibot.autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.teamcode.cv.VuforiaNavigator;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBot;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
+import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
+import org.firstinspires.ftc.teamcode.util.MotionProfile;
 
 @Autonomous(name = "Right Auto Two Cone Kalman")
 public class RightAutoTwoConeKalman extends OmniBotAuto {
@@ -44,7 +48,7 @@ public class RightAutoTwoConeKalman extends OmniBotAuto {
         turnToHeading(0, 3, 6, 60);
         driveToPosition(10, 4, 18, 43, 0, 2, 1);
 
-        // Lower lif a little, drop off cone, then raise lift again
+        // Lower lift a little, drop off cone, then raise lift again
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
@@ -67,9 +71,22 @@ public class RightAutoTwoConeKalman extends OmniBotAuto {
         driveToPosition(10,4,36,12,0,2,1, updater_0);
 
 
+        // Drive in x direction to cone stack.
+        driveLine(Quadrant.RED_RIGHT, HeadingIndex.H_0, new VectorF(36,12), 0,
+                new MotionProfile(4, 16, 10), 2, 2, 22.5f,
+                new KalmanDistanceUpdater(bot.rightDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50,
+                        null, null, null),
+                ()->bot.getHSV()[1]>0.4 || bot.getPose().x>64);
 
-        // Drive in x direction to cone stack. TODO: May need to fix issue with the distance sensor and cone
-        driveToPosition(10, 4, 58.5f, 12, 0, 2, 1);
+        adjustPositionColor(0.4f, 0, 4, 5, 2, 0.1f);
+
+        bot.setPose(58.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
+        bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
+                1, 0, 0, bot.getCovariance().get(1,1)}));
+
+        /* Back away from the cone stack a few inches, turn so claw faces stack, drive back to stack
+         * and grab cone
+         */
         driveToPosition(10, 4, 58.5f, 16, 0, 2, 1);
         turnToHeading(-135, 3, 6, 60);
         bot.openClaw();
@@ -80,6 +97,10 @@ public class RightAutoTwoConeKalman extends OmniBotAuto {
         sleep(300);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(300);
+
+        /*
+         * Back away from cone stack, turn, drive to junction, and drop off cone
+         */
         driveToPosition(10, 4, 58.5f, 15, -135, 2, 1);
         turnToHeading(90, 3, 6, 60);
         driveToPosition(10, 4, 52.5f, 18, 90, 2, 1);
@@ -89,8 +110,11 @@ public class RightAutoTwoConeKalman extends OmniBotAuto {
         sleep(200);
         bot.setClawPosition(OmniBot.LIFT_LOW);
         sleep(200);
+
+        /*
+         * Drive to the appropriate parking location.
+         */
         driveToPosition(10, 4, 58.5f, 12, 90, 2, 1);
-        //TODO program distance sensors to know distance from wall. Rotate to pick up cone from 5 stack. Turn and deliver on shortest poll. Park
         if(signalResult == SignalResult.ONE){
             driveToPosition(10, 4, 58.5f, 59, 90, 2, 1, updater_90);
         }else if(signalResult == SignalResult.TWO){

@@ -247,49 +247,100 @@ public abstract class OmniBotAuto extends LinearOpMode {
         bot.updateOdometry();
     }
 
-    /*
-     * Drive along a line, with sides of bot parallel to field walls
+    /**
+     *
+     * @param quad      Quadrant of field
+     * @param index     Bot heading index
+     * @param p0        Starting point on line (needn't be exact bot starting position)
+     * @param directionDegrees  Direction of travel along line
+     * @param profile   Motion profile (vMax, vMin, accel)
+     * @param cpTheta   Correction coefficient for heading (orientation)
+     * @param cpDist    Correction coefficient for linear offset from line
+     * @param estDist   Estimated total distance of travel along the line
+     * @param updater   KalmanMeasurementUpdater for pose correction (may be null if desired)
+     * @param finished  Pred object to indicate when operation is finished
      */
-    public void driveOrthoLine(Quadrant quad, HeadingIndex index, VectorF p0, float directionDegrees,
+    public void driveLine(Quadrant quad, HeadingIndex index, VectorF p0, float directionDegrees,
                                MotionProfile profile, float cpTheta, float cpDist, float estDist,
                                KalmanMeasurementUpdater updater, Pred finished){
         float targetHeadingRadians = index.radians;
         float directionRadians = (float)Math.toRadians(directionDegrees);
+
+        // Unit vector indicating direction of travel along line
         VectorF u = new VectorF((float)Math.cos(directionRadians), (float)Math.sin(directionRadians));
+
+        // Unit vector perpendicular to direction of travel along line (w = z x u)
         VectorF w = new VectorF(-u.get(1), u.get(0));
+
         float vMinSqr = profile.vMin * profile.vMin;
 
         while (opModeIsActive()){
 
+            // Update pose, using odometry followed by Kalman Updater (if provided)
             bot.updateOdometry();
             if (updater != null){
                 Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
                 bot.adjustPose(updatedPose.x, updatedPose.y);
             }
 
+            // Check to see if it is time to terminate the operation
             if (finished.test()) break;
 
+            // Vector from starting position of line to current bot position
             VectorF q = new VectorF(bot.getPose().x, bot.getPose().y).subtracted(p0);
 
+            // Vector from current robot position to closest point on line
             VectorF err = w.multiplied(q.get(0)*u.get(1) - q.get(1)*u.get(0));
 
-            float d0 = q.magnitude();
+            // Distance from p0 to point on line closest to robot (q * u); don't allow neg value
+            float d0 = Math.max(0, q.dotProduct(u));
+            // Estimated distance from bot position to stopping point; don't allow neg value
             float d1 = Math.max(0, estDist - d0);
 
+            /*
+             * Target speed will be the minimum of: vMax and the speeds calculated from the
+             * acceleration/deceleration, vMin, and distance from start or end point.
+             */
             float speed = (float)Math.min(profile.vMax,
                     Math.min(Math.sqrt(vMinSqr + 2*profile.accel*d0),
                             Math.sqrt(vMinSqr + 2*profile.accel*d1)));
 
+            /*
+             * Get velocity by adding a correction to the nominal velocity along the line.
+             */
             VectorF vel = u.multiplied(speed).added(err.multiplied(cpDist));
 
+            // Convert to velocity in robot coordinate system
             float sin = (float)Math.sin(bot.getPose().theta);
             float cos = (float)Math.cos(bot.getPose().theta);
-
             float vxr = vel.get(0) * sin - vel.get(1) * cos;
             float vyr = vel.get(0) * cos + vel.get(1) * sin;
 
+            // Angular speed based on offset from target heading
             float headingOffset = AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
             float va = cpTheta * headingOffset;
+
+            bot.setDriveSpeed(vxr, vyr, va);
+        }
+        bot.setDriveSpeed(0,0,0);
+        bot.updateOdometry();
+    }
+
+    public void adjustPositionColor(float targetHue, float targetHeadingDegrees, float maxSpeed,
+                                    float cpHue, float cpHeading, float tolerance){
+        float targetHeadingRadians = (float)Math.toRadians(targetHeadingDegrees);
+        while (opModeIsActive()){
+            bot.updateOdometry();
+            float hueOffset = targetHue - bot.getHSV()[1];
+
+            if (Math.abs(hueOffset) < tolerance){
+                break;
+            }
+
+            float vx = maxSpeed * cpHue * hueOffset;
+            float vxr = vx * (float)Math.sin(bot.getPose().theta);
+            float vyr = vx * (float)Math.cos(bot.getPose().theta);
+            float va = cpHeading * (float)AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
 
             bot.setDriveSpeed(vxr, vyr, va);
         }
