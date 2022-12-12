@@ -12,62 +12,61 @@ public class RightAutoTwoConeKalman extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
+
+        // Distance updater for pose 0
         PowerPlayDistUpdater updater_0 = new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0,
                 true, true);
+
+        // Distance updater for pose 90
         PowerPlayDistUpdater updater_90 = new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_90,
                 true, true);
+
         bot.setPose(8, 36, -90);
+
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
         VuforiaNavigator.activate(null, webcamName);
+
         bot.closeClaw();
+
         waitForStart();
+
+        // Get signal result
         signalResult = getSignalResult();
         telemetry.addData("Signal", signalResult);
         telemetry.update();
+
+        // Raise lift to the position for low junction
         bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(200);
-        driveToPosition(10, 4, 12, 36, -90, 2, 1,
-                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_NEG_90, true, true));
+
+        //Drive to middle of square, turn, then drive to low junction; NO Kalman
+        driveToPosition(10, 4, 12, 36, -90, 2, 1);
         turnToHeading(0, 3, 6, 60);
-        driveToPosition(10, 4, 18, 43, 0, 2, 1, updater_0);
+        driveToPosition(10, 4, 18, 43, 0, 2, 1);
+
+        // Lower lif a little, drop off cone, then raise lift again
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
         sleep(200);
         bot.setClawPosition(OmniBot.LIFT_LOW);
         sleep(200);
-        driveToPosition(10, 4, 12, 36, 0, 2, 1, updater_0);
-        driveToPosition(10, 4, 40, 36, 0, 2, 1, updater_0);
-        driveToPosition(10, 4, 36, 36, 0, 2, 1, updater_0);
+
+        // Drive back to middle of starting square
+        driveToPosition(10, 4, 12, 36, 0, 2, 1);
+
+        // Drive forward, pushing signal out of the way, using Kalman for X only
+        driveToPosition(10, 4, 40, 36, 0, 2, 1,
+                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
+
+        // Back away, to middle of square, away from signal sleeve, Kalman for X only
+        driveToPosition(10, 4, 36, 36, 0, 2, 1,
+                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
+
+        // Drive toward right wall, using Kalman for X and Y
         driveToPosition(10,4,36,12,0,2,1, updater_0);
-//        float minRight = 10000;
-//        float minBack = 10000;
-//        float maxRight = 0;
-//        float maxBack = 0;
-//        float sumRight = 0;
-//        float sumBack = 0;
-//        for(int i = 0; i < 5; i++){
-//            float rightDistance = bot.getRightDistance();
-//            float backDistance = bot.getBackDistance();
-//            if(rightDistance < minRight) minRight = rightDistance;
-//            if(rightDistance > maxRight) maxRight = rightDistance;
-//            if(backDistance < minBack) minBack = backDistance;
-//            if(backDistance > maxBack) maxBack = backDistance;
-//            sumRight += rightDistance;
-//            sumBack += backDistance;
-//        }
-//        sumRight -= minRight + maxRight;
-//        sumBack -= minBack + maxBack;
-//        float avgRight = sumRight/3;
-//        float avgBack = sumBack/3;
-//        float newX = bot.getPose().x;
-//        float newY = bot.getPose().y;
-//        if(avgRight > 3 && avgRight < 36) newY = avgRight + 6;
-//        if(avgBack > 3 && avgBack < 48) newX = avgBack + 6;
-//        telemetry.addData("distances", "R %.1f   B %.1f", avgRight, avgBack);
-//        telemetry.update();
-//        bot.setPose(newX,newY,(float) Math.toDegrees(bot.getPose().theta));
-        driveToPosition(10, 4, bot.getPose().x, 12, 0, 2, 1, updater_0);
+
+
 
         // Drive in x direction to cone stack. TODO: May need to fix issue with the distance sensor and cone
         driveToPosition(10, 4, 58.5f, 12, 0, 2, 1);

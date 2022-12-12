@@ -2,8 +2,11 @@ package org.firstinspires.ftc.teamcode.omnibot;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.Predicate;
+
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -14,6 +17,7 @@ import org.firstinspires.ftc.teamcode.cv.HSV_Range;
 import org.firstinspires.ftc.teamcode.util.AngleUtil;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.KalmanMeasurementUpdater;
+import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.Pose;
 
 import java.util.List;
@@ -29,7 +33,15 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
     public enum Quadrant{ RED_RIGHT, RED_LEFT, BLUE_RIGHT, BLUE_LEFT }
 
-    public enum HeadingIndex{ H_0, H_90, H_NEG_90, H_180 }
+    public enum HeadingIndex{
+        H_0 (0),
+        H_90 ((float)Math.PI/2),
+        H_NEG_90(-(float)Math.PI/2),
+        H_180 ((float)Math.PI);
+
+        public float radians;
+        HeadingIndex(float radians){ this.radians = radians; }
+    }
 
     HSV_Range hsvGreen = new HSV_Range(80, 120, 0.25f, 1.0f, 0.3f, 1.0f);
 
@@ -151,8 +163,10 @@ public abstract class OmniBotAuto extends LinearOpMode {
         while (opModeIsActive()) {
             bot.updateOdometry();
 
-            Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
-            bot.adjustPose(updatedPose.x, updatedPose.y);
+            if (updater != null) {
+                Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
+                bot.adjustPose(updatedPose.x, updatedPose.y);
+            }
 
             float xError = targetX - bot.getPose().x;
             float yError = targetY - bot.getPose().y;
@@ -212,8 +226,10 @@ public abstract class OmniBotAuto extends LinearOpMode {
         float targetHeadingRadians = (float)Math.toRadians(targetHeading);
         while(opModeIsActive()){
             bot.updateOdometry();
-            Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
-            bot.adjustPose(updatedPose.x, updatedPose.y);
+            if (updater != null) {
+                Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
+                bot.adjustPose(updatedPose.x, updatedPose.y);
+            }
             if(finished.test()){
                 break;
             }
@@ -230,6 +246,57 @@ public abstract class OmniBotAuto extends LinearOpMode {
         bot.setDriveSpeed(0, 0, 0);
         bot.updateOdometry();
     }
+
+    /*
+     * Drive along a line, with sides of bot parallel to field walls
+     */
+    public void driveOrthoLine(Quadrant quad, HeadingIndex index, VectorF p0, float directionDegrees,
+                               MotionProfile profile, float cpTheta, float cpDist, float estDist,
+                               KalmanMeasurementUpdater updater, Pred finished){
+        float targetHeadingRadians = index.radians;
+        float directionRadians = (float)Math.toRadians(directionDegrees);
+        VectorF u = new VectorF((float)Math.cos(directionRadians), (float)Math.sin(directionRadians));
+        VectorF w = new VectorF(-u.get(1), u.get(0));
+        float vMinSqr = profile.vMin * profile.vMin;
+
+        while (opModeIsActive()){
+
+            bot.updateOdometry();
+            if (updater != null){
+                Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
+                bot.adjustPose(updatedPose.x, updatedPose.y);
+            }
+
+            if (finished.test()) break;
+
+            VectorF q = new VectorF(bot.getPose().x, bot.getPose().y).subtracted(p0);
+
+            VectorF err = w.multiplied(q.get(0)*u.get(1) - q.get(1)*u.get(0));
+
+            float d0 = q.magnitude();
+            float d1 = Math.max(0, estDist - d0);
+
+            float speed = (float)Math.min(profile.vMax,
+                    Math.min(Math.sqrt(vMinSqr + 2*profile.accel*d0),
+                            Math.sqrt(vMinSqr + 2*profile.accel*d1)));
+
+            VectorF vel = u.multiplied(speed).added(err.multiplied(cpDist));
+
+            float sin = (float)Math.sin(bot.getPose().theta);
+            float cos = (float)Math.cos(bot.getPose().theta);
+
+            float vxr = vel.get(0) * sin - vel.get(1) * cos;
+            float vyr = vel.get(0) * cos + vel.get(1) * sin;
+
+            float headingOffset = AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
+            float va = cpTheta * headingOffset;
+
+            bot.setDriveSpeed(vxr, vyr, va);
+        }
+        bot.setDriveSpeed(0,0,0);
+        bot.updateOdometry();
+    }
+
 
     public class PowerPlayDistUpdater extends KalmanDistanceUpdater {
 
