@@ -19,6 +19,13 @@ public class KalmanDistanceUpdater implements KalmanMeasurementUpdater{
     private float DIST_STD_DEV_COEFF = 0.02f;
     private float DIST_VAR_COEFF = DIST_STD_DEV_COEFF * DIST_STD_DEV_COEFF;
 
+    /* Sensor readings from prior iteration; we only want new results.
+     * If current and prior distance readings are equal, it is likely that the robot is
+     * stopped, and we won't apply these measurements.
+     */
+    private float priorXDist = 0;
+    private float priorYDist = 0;
+
     public KalmanDistanceUpdater(){}
 
     public KalmanDistanceUpdater(DistanceSensor sensX, Function<Float,Float> xFromDist, Predicate<Float> xValid,
@@ -41,11 +48,17 @@ public class KalmanDistanceUpdater implements KalmanMeasurementUpdater{
 
         if (sensX != null) {
             xDist = (float)sensX.getDistance(DistanceUnit.INCH);
-            validX = xValid.test(xDist);
+            if (xDist != priorXDist) {
+                validX = xValid == null || xValid.test(xDist);
+                priorXDist = xDist;
+            }
         }
         if (sensY != null) {
             yDist = (float)sensY.getDistance(DistanceUnit.INCH);
-            validY = yValid.test(yDist);
+            if (yDist != priorYDist) {
+                validY = yValid == null || yValid.test(yDist);
+                priorYDist = yDist;
+            }
         }
 
         if (sensY == null){
@@ -55,22 +68,22 @@ public class KalmanDistanceUpdater implements KalmanMeasurementUpdater{
             return KalmanUtilities.applyXMeasurement(poseMinus, covMinus, xMeas, xVar);
         } else if (sensX == null) {
             if (!validY) return poseMinus;
-            float yMeas = xFromDist.apply(yDist);
+            float yMeas = yFromDist.apply(yDist);
             float yVar = DIST_VAR_COEFF * yDist * yDist;
-            return KalmanUtilities.applyXMeasurement(poseMinus, covMinus, yMeas, yVar);
+            return KalmanUtilities.applyYMeasurement(poseMinus, covMinus, yMeas, yVar);
         } else {
             if (validX && !validY) {
                 float xMeas = xFromDist.apply(xDist);
                 float xVar = DIST_VAR_COEFF * xDist * xDist;
                 return KalmanUtilities.applyXMeasurement(poseMinus, covMinus, xMeas, xVar);
             } else if (validY && !validX) {
-                float yMeas = xFromDist.apply(yDist);
+                float yMeas = yFromDist.apply(yDist);
                 float yVar = DIST_VAR_COEFF * yDist * yDist;
                 return KalmanUtilities.applyYMeasurement(poseMinus, covMinus, yMeas, yVar);
-            } else if (validX && validY) {
+            } else if (validX) {        // to reach this point we know validX and validY are equal
                 float xMeas = xFromDist.apply(xDist);
                 float xVar = DIST_VAR_COEFF * xDist * xDist;
-                float yMeas = xFromDist.apply(yDist);
+                float yMeas = yFromDist.apply(yDist);
                 float yVar = DIST_VAR_COEFF * yDist * yDist;
                 return KalmanUtilities.applyXYMeasurement(poseMinus, covMinus, xMeas, xVar, yMeas, yVar);
             }
@@ -79,6 +92,12 @@ public class KalmanDistanceUpdater implements KalmanMeasurementUpdater{
             }
         }
 
+    }
+
+    public KalmanDistanceUpdater reset(){
+        priorXDist = 0;
+        priorYDist = 0;
+        return this;
     }
 
 }
