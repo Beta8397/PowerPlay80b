@@ -4,8 +4,14 @@
 
 package org.firstinspires.ftc.teamcode.omnibot;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.cv.VuforiaNavigator;
 
 @TeleOp(name = "OmniBotDiagnostics", group = "Test")
 //@Disabled
@@ -26,12 +32,29 @@ public class OmniBotDiagnostics extends LinearOpMode {
 //        bot.getBackLeft().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        bot.getBackRight().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
+        VuforiaNavigator.activate(null, webcamName);
+
         bot.setPose(0, 0, 0);
 
         waitForStart();
 
+        int loopCounter = 0;
+        double avgCycleMillis = 0;
+        ElapsedTime cycleTimer = new ElapsedTime();
+        ElapsedTime avgCycleTimer = new ElapsedTime();
+
         while (opModeIsActive()){
             doOneIteration();
+            loopCounter++;
+            double cycleMillis = cycleTimer.milliseconds();
+            cycleTimer.reset();
+            if (loopCounter == 100){
+                loopCounter = 0;
+                avgCycleMillis = avgCycleTimer.milliseconds()/100.0;
+                avgCycleTimer.reset();
+            }
+            telemetry.addData("Cycle Time", "%.1f  Avg: %.1f", cycleMillis, avgCycleMillis);
             telemetry.update();
         }
 
@@ -61,18 +84,19 @@ public class OmniBotDiagnostics extends LinearOpMode {
                 bot.getPose().x, bot.getPose().y,
                 Math.toDegrees(bot.getPose().theta));
         telemetry.addData("Encoders", "B %d  F %d  L %d  R %d",
-                bot.back.getCurrentPosition(), bot.front.getCurrentPosition(),
-                bot.left.getCurrentPosition(), bot.right.getCurrentPosition());
+                bot.bTics, bot.fTics, bot.lTics, bot.rTics);
         telemetry.addData("Speeds", "B %.0f  F %.0f,  L %.0f  R %.0f",
                 bot.back.getVelocity(), bot.front.getVelocity(),
                 bot.left.getVelocity(), bot.right.getVelocity());
 
         telemetry.addData("DIST","F %.1f  B %.1f  R %.1f  L %.1f",bot.getFrontDistance(),
                 bot.getBackDistance(), bot.getRightDistance(), bot.getLeftDistance());
-        float[] hsv = bot.getHSV();
+        int colorInt = bot.color.getNormalizedColors().toColor();
+        float[] hsv = new float[3];
+        Color.colorToHSV(colorInt, hsv);
         telemetry.addData("HSV","H %.2f  S %.2f  V %.2f",hsv[0], hsv[1], hsv[2]);
-        int[] rgb = bot.getRGB();
-        telemetry.addData("RGB","R %d  G %d  B %d", rgb[0], rgb[1], rgb[2]);
+        telemetry.addData("RGB","R %d  G %d  B %d", Color.red(colorInt),
+                Color.green(colorInt), Color.blue(colorInt));
 
     }
 

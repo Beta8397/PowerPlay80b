@@ -48,10 +48,10 @@ public class OmniBot {
 
     float headingOffset = 0;
 
-    int lTics = 0;
-    int fTics = 0;
-    int rTics = 0;
-    int bTics = 0;
+    public int lTics = 0;
+    public int fTics = 0;
+    public int rTics = 0;
+    public int bTics = 0;
 
     private Pose pose = new Pose(0, 0, 0);
     private MatrixF covariance = new GeneralMatrixF(2,2,new float[]{0,0,0,0});
