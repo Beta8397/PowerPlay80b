@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.omnibot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.Predicate;
 
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -147,7 +145,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
                 vx *= vMin / v;
                 vy *= vMin / v;
             }
-            float va = 1.0f * thetaError;
+            float va = 2.0f * thetaError;
             bot.setDriveSpeed(vx, vy, va);
         }
         bot.setDriveSpeed(0, 0,0);
@@ -190,8 +188,64 @@ public abstract class OmniBotAuto extends LinearOpMode {
                 vx *= vMin / v;
                 vy *= vMin / v;
             }
-            float va = 1.0f * thetaError;
+            float va = 2.0f * thetaError;
             bot.setDriveSpeed(vx, vy, va);
+        }
+        bot.setDriveSpeed(0, 0,0);
+        bot.updateOdometry();
+    }
+
+    protected void driveToPosition(MotionProfile profile, float targetX, float targetY, float targetThetaDegrees,
+                                   float tolerance, KalmanMeasurementUpdater updater) {
+        float headingTargetRadians = targetThetaDegrees * (float)Math.PI / 180;
+
+        //Starting point
+        float x0 = bot.getPose().x;
+        float y0 = bot.getPose().y;
+
+        while (opModeIsActive()) {
+
+            // Update bot pose with odometry, and if provided, adjust with Kalman filter
+            bot.updateOdometry();
+
+            if (updater != null) {
+                Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
+                bot.adjustPose(updatedPose.x, updatedPose.y);
+            }
+
+            // Distance of bot from starting point
+            float d0 = (float)Math.hypot(bot.getPose().x - x0, bot.getPose().y - y0);
+
+            // Vector (field coordinates) from bot to target point; d1 is magnitude of this vector
+            float xError = targetX - bot.getPose().x;
+            float yError = targetY - bot.getPose().y;
+            float d1 = (float)Math.hypot(xError, yError);
+
+            if (d1 < tolerance) break;
+
+            // Heading error
+            float thetaError = (float)AngleUtil.normalizeRadians(headingTargetRadians - bot.getPose().theta);
+
+            // Convert the (xError, yError) vector to ROBOT coordinate system (xErrorRobot, yErrorRobot)
+            float sinTheta = (float)Math.sin(bot.getPose().theta);
+            float cosTheta = (float)Math.cos(bot.getPose().theta);
+            float xErrorRobot = xError * sinTheta - yError * cosTheta;
+            float yErrorRobot = xError * cosTheta + yError * sinTheta;
+
+            /*
+             * Robot speed will be the minimum of vMax and the two speeds computed from vMin,
+             * acceleration, and distances from starting and target points
+             */
+            float vMinSqr = profile.vMin * profile.vMin;
+            float speed = (float)Math.min(profile.vMax,
+                    Math.min(Math.sqrt(vMinSqr + 2*d0*profile.accel),
+                            Math.sqrt(vMinSqr + 2*d1*profile.accel)));
+
+            // Robot velocity vector
+            float vxr = speed * xErrorRobot / d1;
+            float vyr = speed * yErrorRobot / d1;
+            float va = 2.0f * thetaError;
+            bot.setDriveSpeed(vxr, vyr, va);
         }
         bot.setDriveSpeed(0, 0,0);
         bot.updateOdometry();
@@ -250,20 +304,19 @@ public abstract class OmniBotAuto extends LinearOpMode {
     /**
      *
      * @param quad      Quadrant of field
-     * @param index     Bot heading index
+     * @param targetHeadingDegrees     desired orientation of robot
      * @param p0        Starting point on line (needn't be exact bot starting position)
      * @param directionDegrees  Direction of travel along line
      * @param profile   Motion profile (vMax, vMin, accel)
-     * @param cpTheta   Correction coefficient for heading (orientation)
      * @param cpDist    Correction coefficient for linear offset from line
      * @param estDist   Estimated total distance of travel along the line
      * @param updater   KalmanMeasurementUpdater for pose correction (may be null if desired)
      * @param finished  Pred object to indicate when operation is finished
      */
-    public void driveLine(Quadrant quad, HeadingIndex index, VectorF p0, float directionDegrees,
-                               MotionProfile profile, float cpTheta, float cpDist, float estDist,
+    public void driveLine(Quadrant quad, float targetHeadingDegrees, VectorF p0, float directionDegrees,
+                               MotionProfile profile, float cpDist, float estDist,
                                KalmanMeasurementUpdater updater, Pred finished){
-        float targetHeadingRadians = index.radians;
+        float targetHeadingRadians = (float)Math.toRadians(targetHeadingDegrees);
         float directionRadians = (float)Math.toRadians(directionDegrees);
 
         // Unit vector indicating direction of travel along line
@@ -318,7 +371,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
             // Angular speed based on offset from target heading
             float headingOffset = AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
-            float va = cpTheta * headingOffset;
+            float va = 2.0f * headingOffset;
 
             bot.setDriveSpeed(vxr, vyr, va);
         }
@@ -327,7 +380,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
     }
 
     public void adjustPositionColor(float targetHue, float targetHeadingDegrees, float maxSpeed,
-                                    float cpHue, float cpHeading, float tolerance){
+                                    float cpHue, float tolerance){
         float targetHeadingRadians = (float)Math.toRadians(targetHeadingDegrees);
         while (opModeIsActive()){
             bot.updateOdometry();
@@ -340,7 +393,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
             float vx = maxSpeed * cpHue * hueOffset;
             float vxr = vx * (float)Math.sin(bot.getPose().theta);
             float vyr = vx * (float)Math.cos(bot.getPose().theta);
-            float va = cpHeading * (float)AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
+            float va = 2.0f * (float)AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
 
             bot.setDriveSpeed(vxr, vyr, va);
         }

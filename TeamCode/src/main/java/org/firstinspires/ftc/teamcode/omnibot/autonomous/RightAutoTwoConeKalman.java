@@ -72,13 +72,13 @@ public class RightAutoTwoConeKalman extends OmniBotAuto {
 
 
         // Drive in x direction to cone stack.
-        driveLine(Quadrant.RED_RIGHT, HeadingIndex.H_0, new VectorF(36,12), 0,
-                new MotionProfile(4, 16, 10), 2, 2, 22.5f,
-                new KalmanDistanceUpdater(bot.rightDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50,
-                        null, null, null),
+        driveLine(Quadrant.RED_RIGHT, 0, new VectorF(36,12), 0,
+                new MotionProfile(4, 16, 10), 2, 22.5f,
+                new KalmanDistanceUpdater(null, null, null,
+                        bot.rightDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50),
                 ()->bot.getHSV()[1]>0.4 || bot.getPose().x>64);
 
-        adjustPositionColor(0.4f, 0, 4, 5, 2, 0.1f);
+        adjustPositionColor(0.4f, 0, 4, 5, 0.1f);
 
         bot.setPose(58.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
         bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
