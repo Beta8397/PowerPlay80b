@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.omnibot;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBot;
 import org.firstinspires.ftc.teamcode.util.gamepad.ButtonToggle;
 
-@TeleOp(name = "testOmni", group = "test")
-public class TestOmni extends LinearOpMode {
+@TeleOp(name = "OmniBot TeleOp", group = "Comp")
+public class OmniBotTeleOp extends LinearOpMode {
 
     OmniBot bot = new OmniBot();
 

@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.cv.VuforiaNavigator;
 
 @TeleOp(name = "OmniBotDiagnostics", group = "Test")
@@ -91,6 +92,9 @@ public class OmniBotDiagnostics extends LinearOpMode {
 
         telemetry.addData("DIST","F %.1f  B %.1f  R %.1f  L %.1f",bot.getFrontDistance(),
                 bot.getBackDistance(), bot.getRightDistance(), bot.getLeftDistance());
+
+//        telemetry.addData("RIGHT DIST", bot.rightDist.getDistance(DistanceUnit.INCH));
+
         int colorInt = bot.color.getNormalizedColors().toColor();
         float[] hsv = new float[3];
         Color.colorToHSV(colorInt, hsv);

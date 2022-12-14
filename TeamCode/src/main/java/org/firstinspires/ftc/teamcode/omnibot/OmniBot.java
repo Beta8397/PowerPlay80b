@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.omnibot;
 
 import android.graphics.Color;
 
+//import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -71,6 +72,11 @@ public class OmniBot {
 
 
     public void init(HardwareMap hwmap){
+
+        // We can either enable PhotonCore (which sets Auto-caching) or set Auto-caching here; not both.
+
+        //PhotonCore.enable();
+
         List<LynxModule> allHubs = hwmap.getAll(LynxModule.class);
         for (LynxModule module: allHubs) { module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);}
 

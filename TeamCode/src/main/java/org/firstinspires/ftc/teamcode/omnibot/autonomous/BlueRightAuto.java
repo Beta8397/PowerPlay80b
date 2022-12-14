@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.omnibot.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.cv.VuforiaNavigator;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBot;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 
+@Disabled
 @Autonomous(name = "Blue Right Auto")
 public class BlueRightAuto extends OmniBotAuto {
     @Override

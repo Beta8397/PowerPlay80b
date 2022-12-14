@@ -1,14 +1,16 @@
 package org.firstinspires.ftc.teamcode.omnibot.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.cv.VuforiaNavigator;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBot;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 
-@Autonomous(name = "Right Auto Two Cone Color")
-public class RightAutoTwoConeColor extends OmniBotAuto {
+@Disabled
+@Autonomous(name = "Right Auto Two Cone Old 2")
+public class RightAutoTwoCone_Old1 extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -31,10 +33,10 @@ public class RightAutoTwoConeColor extends OmniBotAuto {
         sleep(200);
         bot.setClawPosition(OmniBot.LIFT_LOW);
         sleep(200);
-        driveToPosition(12, 4, 12, 36, 0, 2, 1);
-        driveToPosition(12, 4, 40, 36, 0, 2, 1);
-        driveToPosition(12, 4, 36, 36, 0, 2, 1);
-        driveToPosition(12,4,36,12,0,2,1);
+        driveToPosition(10, 4, 12, 36, 0, 2, 1);
+        driveToPosition(10, 4, 40, 36, 0, 2, 1);
+        driveToPosition(10, 4, 36, 36, 0, 2, 1);
+        driveToPosition(10,4,36,12,0,2,1);
         float minRight = 10000;
         float minBack = 10000;
         float maxRight = 0;
@@ -62,37 +64,33 @@ public class RightAutoTwoConeColor extends OmniBotAuto {
         telemetry.addData("distances", "R %.1f   B %.1f", avgRight, avgBack);
         telemetry.update();
         bot.setPose(newX,newY,(float) Math.toDegrees(bot.getPose().theta));
-        driveToPosition(10, 4, bot.getPose().x, 14, 0, 2, 1);
-        // TODO: Drive with color
-//        driveToPosition(10, 4, 58.5f, 12, 0, 2, 1);
-        driveDirection(12, 0, 0, 1,
-                ()->bot.getHSV()[1]>0.4);
+        driveToPosition(10, 4, bot.getPose().x, 12, 0, 2, 1);
+        driveToPosition(10, 4, 58.5f, 12, 0, 2, 1);
         driveToPosition(10, 4, 58.5f, 16, 0, 2, 1 );
         turnToHeading(-135, 3, 6, 60);
         bot.openClaw();
         bot.setLiftPosition(-440);
         sleep(300);
-        driveToPosition(10, 4, 57.5f, 6, -135, 2, 1);
+        driveToPosition(10, 4, 58.5f, 8, -135, 2, 1);
         bot.closeClaw();
         sleep(300);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(300);
         driveToPosition(10, 4, 58.5f, 15, -135, 2, 1);
         turnToHeading(90, 3, 6, 60);
-        // Drive to drop off second cone
-        driveToPosition(10, 4, 51.5f, 14, 90, 2, 1);
+        driveToPosition(10, 4, 52.5f, 18, 90, 2, 1);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
         sleep(200);
         bot.setClawPosition(OmniBot.LIFT_LOW);
         sleep(200);
-        driveToPosition(14, 4, 58.5f, 12, 90, 2, 1);
+        driveToPosition(10, 4, 58.5f, 12, 90, 2, 1);
         //TODO program distance sensors to know distance from wall. Rotate to pick up cone from 5 stack. Turn and deliver on shortest poll. Park
         if(signalResult == SignalResult.ONE){
-            driveToPosition(14, 4, 58.5f, 59, 90, 2, 1);
+            driveToPosition(10, 4, 58.5f, 59, 90, 2, 1);
         }else if(signalResult == SignalResult.TWO){
-            driveToPosition(14, 4, 58.5f, 36, 90, 2, 1);
+            driveToPosition(10, 4, 58.5f, 36, 90, 2, 1);
         }
     }
 
