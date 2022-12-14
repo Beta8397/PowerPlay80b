@@ -20,20 +20,24 @@ public class RightAutoOneCone extends OmniBotAuto {
         signalResult = getSignalResult();
         bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(200);
+
+        //Drive to low junction and drop off pre-loaded cone
         driveToPosition(10, 4, 12, 36, -90, 2, 1);
         turnToHeading(0, 3, 6, 60);
-        driveToPosition(10, 4, 18, 43, 0, 2, 1);
+        driveToPosition(10, 4, 18.5f, 42.5f, 0, 2, 1); // was 18, 43
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
         sleep(200);
         bot.setClawPosition(OmniBot.LIFT_LOW);
         sleep(200);
-        driveToPosition(10, 4, 12, 36, 0, 2, 1,
+
+        // Back away from low junction, push signal away, and park
+        driveToPosition(10, 4, 12, 35.5f, 0, 2, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
-        driveToPosition(10, 4, 40, 36, 0, 2, 1,
+        driveToPosition(10, 4, 40, 35.5f, 0, 2, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
-        driveToPosition(10, 4, 36, 36, 0, 2, 1,
+        driveToPosition(10, 4, 36, 35.5f, 0, 2, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
         if(signalResult == SignalResult.ONE){
             driveToPosition(10, 4, 36, 59, 0, 2, 1,

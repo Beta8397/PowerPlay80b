@@ -38,7 +38,7 @@ public class RightAutoTwoCone extends OmniBotAuto {
         //Drive to middle of square, turn, then drive to low junction; NO Kalman
         driveToPosition(10, 4, 12, 36, -90, 2, 1);
         turnToHeading(0, 3, 6, 60);
-        driveToPosition(10, 4, 18, 43, 0, 2, 1);
+        driveToPosition(10, 4, 18.5f, 42.5f, 0, 2, 1);
 
         // Lower lift a little, drop off cone, then raise lift again
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
@@ -49,15 +49,15 @@ public class RightAutoTwoCone extends OmniBotAuto {
         sleep(200);
 
         // Drive back to middle of starting square
-        driveToPosition(16, 4, 12, 36, 0, 2, 1,
+        driveToPosition(16, 4, 12, 35.5f, 0, 2, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
 
         // Drive forward, pushing signal out of the way, using Kalman for X only
-        driveToPosition(16, 4, 39, 36, 0, 4, 1,
+        driveToPosition(16, 4, 39, 35.5f, 0, 4, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
 
         // Back away, to middle of square, away from signal sleeve, Kalman for X only
-        driveToPosition(16, 4, 35, 36, 0, 4, 1,
+        driveToPosition(16, 4, 35, 35.5f, 0, 4, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
 
         // Drive toward right wall, using Kalman for X and Y
@@ -98,7 +98,7 @@ public class RightAutoTwoCone extends OmniBotAuto {
          */
         driveToPosition(10, 4, 58.5f, 15, -135, 4, 1);
         turnToHeading(90, 3, 6, 60);
-        driveToPosition(10, 4, 51.5f, 17f, 90, 4, 1);
+        driveToPosition(10, 4, 51.25f, 16.75f, 90, 4, 1);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
