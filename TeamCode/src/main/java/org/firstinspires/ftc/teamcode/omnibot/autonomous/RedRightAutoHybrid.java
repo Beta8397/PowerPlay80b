@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 
-@Autonomous(name = "Right Auto Hybrid")
-public class RightAutoHybrid extends OmniBotAuto {
+@Autonomous(name = "Red Right Auto Hybrid")
+public class RedRightAutoHybrid extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
