@@ -24,7 +24,7 @@ public class TestKalman1D extends OmniBotAuto {
 
 
         // Drive in x direction to cone stack.
-        driveLine(Quadrant.RED_RIGHT, 0, new VectorF(36,12), 0,
+        driveLine(0, new VectorF(36,12), 0,
                 new MotionProfile(4, 16, 10), 2, 22.5f,
                 new KalmanDistanceUpdater(null, null, null,
                         bot.rightDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50),

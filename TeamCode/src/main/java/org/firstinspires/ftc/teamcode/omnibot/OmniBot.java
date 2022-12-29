@@ -32,7 +32,8 @@ import org.firstinspires.ftc.teamcode.util.Pose;
 import java.util.List;
 
 
-public class OmniBot {
+public class
+OmniBot {
     DcMotorEx back;
     DcMotorEx front;
     DcMotorEx left;

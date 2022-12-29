@@ -303,7 +303,6 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
     /**
      *
-     * @param quad      Quadrant of field
      * @param targetHeadingDegrees     desired orientation of robot
      * @param p0        Starting point on line (needn't be exact bot starting position)
      * @param directionDegrees  Direction of travel along line
@@ -313,7 +312,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
      * @param updater   KalmanMeasurementUpdater for pose correction (may be null if desired)
      * @param finished  Pred object to indicate when operation is finished
      */
-    public void driveLine(Quadrant quad, float targetHeadingDegrees, VectorF p0, float directionDegrees,
+    public void driveLine(float targetHeadingDegrees, VectorF p0, float directionDegrees,
                                MotionProfile profile, float cpDist, float estDist,
                                KalmanMeasurementUpdater updater, Pred finished){
         float targetHeadingRadians = (float)Math.toRadians(targetHeadingDegrees);
@@ -379,18 +378,18 @@ public abstract class OmniBotAuto extends LinearOpMode {
         bot.updateOdometry();
     }
 
-    public void adjustPositionColor(float targetHue, float targetHeadingDegrees, float maxSpeed,
-                                    float cpHue, float tolerance){
+    public void adjustPositionColor(float targetSat, float targetHeadingDegrees, float maxSpeed,
+                                    float cpSat, float tolerance){
         float targetHeadingRadians = (float)Math.toRadians(targetHeadingDegrees);
         while (opModeIsActive()){
             bot.updateOdometry();
-            float hueOffset = targetHue - bot.getHSV()[1];
+            float satOffset = targetSat - bot.getHSV()[1];
 
-            if (Math.abs(hueOffset) < tolerance){
+            if (Math.abs(satOffset) < tolerance){
                 break;
             }
 
-            float vx = maxSpeed * cpHue * hueOffset;
+            float vx = maxSpeed * cpSat * satOffset;
             float vxr = vx * (float)Math.sin(bot.getPose().theta);
             float vyr = vx * (float)Math.cos(bot.getPose().theta);
             float va = 2.0f * (float)AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);

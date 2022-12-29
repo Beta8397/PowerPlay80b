@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.omnibot.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.robotcore.external.Function;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
@@ -21,6 +22,8 @@ public class RedRightAutoTwoCone extends OmniBotAuto {
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
         VuforiaNavigator.activate(null, webcamName);
+
+
 
         bot.closeClaw();
 
@@ -66,7 +69,7 @@ public class RedRightAutoTwoCone extends OmniBotAuto {
 
 
         // Drive in x direction to cone stack. Stop when color sensor detects red or blue tape
-        driveLine(Quadrant.RED_RIGHT, 0, new VectorF(36,13), 0,
+        driveLine( 0, new VectorF(36,13), 0,
                 new MotionProfile(4, 16, 16), 2, 22.5f,
                 new KalmanDistanceUpdater(null, null, null,
                         bot.rightDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50),

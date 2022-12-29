@@ -66,7 +66,7 @@ public class BlueRightAutoTwoCone extends OmniBotAuto {
 
 
         // Drive in x direction to cone stack. Stop when color sensor detects red or blue tape
-        driveLine(Quadrant.RED_RIGHT, 0, new VectorF(36,13), 0,
+        driveLine( 0, new VectorF(36,13), 0,
                 new MotionProfile(4, 16, 16), 2, 22.5f,
                 new KalmanDistanceUpdater(null, null, null,
                         bot.rightDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50),
