@@ -33,6 +33,7 @@ public class TestLiftClaw extends LinearOpMode {
             bot.setClawPosition(clawPosition);
             telemetry.addData("Lift Target", liftTarget);
             telemetry.addData("Claw Position", clawPosition);
+            telemetry.addData("Hello Kitty","");
             telemetry.update();
         }
     }
