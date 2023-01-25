@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.omnibot.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
@@ -10,7 +11,7 @@ import org.firstinspires.ftc.teamcode.omnibot.OmniBot;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
-
+@Disabled
 @Autonomous(name = "Red Right Auto Hybrid")
 public class RedRightAutoHybrid extends OmniBotAuto {
     @Override
