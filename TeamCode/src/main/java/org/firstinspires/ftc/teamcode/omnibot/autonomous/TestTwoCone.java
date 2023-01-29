@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 
-@Autonomous(name = "Blue Right Auto Two Cone")
-public class BlueRightAutoTwoCone extends OmniBotAuto {
+@Autonomous(name = "Test Two Cone")
+public class TestTwoCone extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -38,7 +38,7 @@ public class BlueRightAutoTwoCone extends OmniBotAuto {
         //Drive to middle of square, turn, then drive to low junction; NO Kalman
         driveToPosition(10, 4, 12, 36, -90, 2, 1);
         turnToHeading(0, 3, 6, 60);
-        driveToPosition(10, 4, 18f, 43f, 0, 2, 1);
+        driveToPosition(10, 4, 19f, 42f, 0, 2, 1);
 
         // Lower lift a little, drop off cone, then raise lift again
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
@@ -109,12 +109,22 @@ public class BlueRightAutoTwoCone extends OmniBotAuto {
         /*
          * Drive to the appropriate parking location.
          */
-        driveToPosition(16, 4, 58.5f, 13, 90, 4, 1);
+        driveToPosition(20, 6, 52.25f, 13, 90, 4, 1);
+        float speedMax = signalResult == signalResult.THREE? 10:20;
+        float speedMin = signalResult == signalResult.THREE? 4:6;
+        float targetX = signalResult == signalResult.THREE? 38:36;
+        driveToPosition(speedMax,speedMin,targetX,13,90,4,1,
+                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_90, true, true));
+
         if(signalResult == SignalResult.ONE){
-            driveToPosition(new MotionProfile(4, 16, 16), 58.5f, 61,
-                    90, 1, null);
+            driveToPosition(new MotionProfile(6, 20, 16), 36f, 61,
+                    90, 1,
+                    new PowerPlayDistUpdater(Quadrant.RED_RIGHT,HeadingIndex.H_90,true,true,
+                            (d)->d>3 && d<48 && Math.abs(d+6-bot.getPose().x)<10,
+                            (d)->d>3 && d<60));
         }else if(signalResult == SignalResult.TWO){
-            driveToPosition(16, 4, 58.5f, 36, 90, 4, 1);
+            driveToPosition(20, 6, 36f, 36, 90, 4, 1,
+                    new PowerPlayDistUpdater(Quadrant.RED_RIGHT,HeadingIndex.H_90,true,true));
         }
     }
 
