@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 
-@Autonomous(name = "Test Two Cone")
-public class TestTwoCone extends OmniBotAuto {
+@Autonomous(name = "Wiggle")
+public class Wiggle extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -117,13 +117,14 @@ public class TestTwoCone extends OmniBotAuto {
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_90, true, true));
 
         if(signalResult == SignalResult.ONE){
-            driveToPosition(new MotionProfile(6, 20, 16), 36f, 58,
-                    90, 1,
+            driveToPositionWiggle(new MotionProfile(6, 20, 16), 36f, 58,
+                    90, 1, 5, 0.1f, 2,
                     new PowerPlayDistUpdater(Quadrant.RED_RIGHT,HeadingIndex.H_90,true,true,
                             (d)->d>3 && d<48 && Math.abs(d+6-bot.getPose().x)<10,
                             (d)->d>3 && d<60));
         }else if(signalResult == SignalResult.TWO){
-            driveToPosition(20, 6, 36f, 36, 90, 4, 1,
+            driveToPositionWiggle(new MotionProfile(6, 20, 16),  36f, 36, 90,  1,
+                   5, 0.1f, 2,
                     new PowerPlayDistUpdater(Quadrant.RED_RIGHT,HeadingIndex.H_90,true,true));
         }
     }
