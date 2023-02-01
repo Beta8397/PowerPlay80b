@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.KalmanMeasurementUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.Pose;
+import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 
 import java.util.List;
 
@@ -27,6 +28,10 @@ public abstract class OmniBotAuto extends LinearOpMode {
     public static float YMAX = 141;
 
     protected OmniBot bot = new OmniBot();
+
+    public final MotionProfile midSpeed = new MotionProfile(10, 16, 16);
+    public final MotionProfile highSpeed = new MotionProfile(10, 20, 16);
+    public final MotionProfile lowSpeed = new MotionProfile(6, 6, 0);
 
     public enum SignalResult{ONE, TWO, THREE}
     protected SignalResult signalResult = SignalResult.ONE;
@@ -253,10 +258,9 @@ public abstract class OmniBotAuto extends LinearOpMode {
         bot.updateOdometry();
     }
 
-    protected void driveToPositionWiggle(MotionProfile profile, float targetX, float targetY, float targetThetaDegrees,
-                                   float tolerance, float wiggleTime, float wiggleAmplitude,
-                                         float wiggleFrequency, KalmanMeasurementUpdater updater) {
-        float headingTargetRadiansBase = targetThetaDegrees * (float)Math.PI / 180;
+    protected void driveToPosition(MotionProfile profile, float targetX, float targetY, float targetThetaDegrees,
+                                         float tolerance, WiggleProfile wiggleProfile, KalmanMeasurementUpdater updater) {
+        float headingTargetRadiansBase = targetThetaDegrees * (float) Math.PI / 180;
 
         //Starting point
         float x0 = bot.getPose().x;
@@ -271,13 +275,13 @@ public abstract class OmniBotAuto extends LinearOpMode {
             bot.updateOdometry();
 
             float headingTargetRadians;
-            float seconds =  (float)et.seconds();
+            float seconds = (float) et.seconds();
 
-            if(seconds < wiggleTime){
+            if (seconds < wiggleProfile.seconds) {
                 headingTargetRadians = headingTargetRadiansBase +
-                        wiggleAmplitude *
-                                (float)Math.sin(2 * Math.PI * wiggleFrequency * seconds);
-            } else{
+                        wiggleProfile.amplitude *
+                                (float) Math.sin(2 * Math.PI * wiggleProfile.frequency * seconds);
+            } else {
                 headingTargetRadians = headingTargetRadiansBase;
             }
 
@@ -287,21 +291,21 @@ public abstract class OmniBotAuto extends LinearOpMode {
             }
 
             // Distance of botfrom starting point
-            float d0 = (float)Math.hypot(bot.getPose().x - x0, bot.getPose().y - y0);
+            float d0 = (float) Math.hypot(bot.getPose().x - x0, bot.getPose().y - y0);
 
             // Vector (field coordinates) from bot to target point; d1 is magnitude of this vector
             float xError = targetX - bot.getPose().x;
             float yError = targetY - bot.getPose().y;
-            float d1 = (float)Math.hypot(xError, yError);
+            float d1 = (float) Math.hypot(xError, yError);
 
             if (d1 < tolerance) break;
 
             // Heading error
-            float thetaError = (float)AngleUtil.normalizeRadians(headingTargetRadians - bot.getPose().theta);
+            float thetaError = (float) AngleUtil.normalizeRadians(headingTargetRadians - bot.getPose().theta);
 
             // Convert the (xError, yError) vector to ROBOT coordinate system (xErrorRobot, yErrorRobot)
-            float sinTheta = (float)Math.sin(bot.getPose().theta);
-            float cosTheta = (float)Math.cos(bot.getPose().theta);
+            float sinTheta = (float) Math.sin(bot.getPose().theta);
+            float cosTheta = (float) Math.cos(bot.getPose().theta);
             float xErrorRobot = xError * sinTheta - yError * cosTheta;
             float yErrorRobot = xError * cosTheta + yError * sinTheta;
 
@@ -310,9 +314,9 @@ public abstract class OmniBotAuto extends LinearOpMode {
              * acceleration, and distances from starting and target points
              */
             float vMinSqr = profile.vMin * profile.vMin;
-            float speed = (float)Math.min(profile.vMax,
-                    Math.min(Math.sqrt(vMinSqr + 2*d0*profile.accel),
-                            Math.sqrt(vMinSqr + 2*d1*profile.accel)));
+            float speed = (float) Math.min(profile.vMax,
+                    Math.min(Math.sqrt(vMinSqr + 2 * d0 * profile.accel),
+                            Math.sqrt(vMinSqr + 2 * d1 * profile.accel)));
 
             // Robot velocity vector
             float vxr = speed * xErrorRobot / d1;
@@ -320,7 +324,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
             float va = 2.0f * thetaError;
             bot.setDriveSpeed(vxr, vyr, va);
         }
-        bot.setDriveSpeed(0, 0,0);
+        bot.setDriveSpeed(0, 0, 0);
         bot.updateOdometry();
     }
 
