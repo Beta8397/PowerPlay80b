@@ -8,6 +8,8 @@ import android.graphics.Color;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -38,12 +40,20 @@ public class OmniBotDiagnostics extends LinearOpMode {
 
         bot.setPose(0, 0, 0);
 
+        PIDFCoefficients pidfSpeed = bot.liftMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        PIDFCoefficients pidfPosition = bot.liftMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+        telemetry.addData("PIDFspeed", pidfSpeed.toString());
+        telemetry.addData("PIDFposition", pidfPosition.toString());
+        telemetry.update();
+
+
         waitForStart();
 
         int loopCounter = 0;
         double avgCycleMillis = 0;
         ElapsedTime cycleTimer = new ElapsedTime();
         ElapsedTime avgCycleTimer = new ElapsedTime();
+
 
         while (opModeIsActive()){
             doOneIteration();

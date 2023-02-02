@@ -92,7 +92,7 @@ public class Wiggle3 extends OmniBotAuto {
         bot.closeClaw();
         sleep(300);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
-        sleep(300);
+        sleep(200);
 
         /*
          * Back away from cone stack, turn, drive to junction, and drop off cone
@@ -131,7 +131,7 @@ public class Wiggle3 extends OmniBotAuto {
         bot.closeClaw();
         sleep(300);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
-        sleep(300);
+        sleep(200);
 
         /*
         * Drive to junction based on parking location

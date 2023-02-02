@@ -12,13 +12,34 @@ public class OmniBotTeleOp extends LinearOpMode {
 
     OmniBot bot = new OmniBot();
 
+    public enum DriveSpeed {SLOW,NORMAL,HIGH}
+    private DriveSpeed speed = DriveSpeed.NORMAL;
+
     ButtonToggle leftBump2Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
-        protected boolean getButtonState() {return gamepad2.left_bumper;} };
+        protected boolean getButtonState() {
+            return gamepad2.left_bumper;
+        }
+    };
     boolean adjustLiftMode = false;
 
     ButtonToggle x2Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
-        protected boolean getButtonState() {return gamepad2.x;}};
+        protected boolean getButtonState() {
+            return gamepad2.x;
+        }
+    };
 
+    ButtonToggle a1Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
+        protected boolean getButtonState() {
+            return gamepad1.a;
+        }
+    };
+
+    ButtonToggle dPadDown1Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
+        @Override
+        protected boolean getButtonState() {
+            return gamepad1.dpad_down;
+        }
+    };
 
     @Override
     public void runOpMode() {
@@ -28,47 +49,72 @@ public class OmniBotTeleOp extends LinearOpMode {
 
         boolean clawClosed = false;
 
+        speed = DriveSpeed.NORMAL;
+
         waitForStart();
         bot.setPose(0, 0, 0);
-        while(opModeIsActive()){
+        while (opModeIsActive()) {
 
             // Obtain and display new pose
             bot.updateOdometry();
             telemetry.addData("Pose", "X = %.1f Y = %.1f  H = %.1f",
                     bot.getPose().x, bot.getPose().y, Math.toDegrees(bot.getPose().theta));
 
+            boolean a1Toggled = a1Toggle.update();
+            boolean dPadDown1Toggled = dPadDown1Toggle.update();
+
+            switch (speed) {
+                case SLOW:
+                    if (a1Toggled) speed = DriveSpeed.HIGH;
+                    else if (dPadDown1Toggled) speed = DriveSpeed.NORMAL;
+                    break;
+                case NORMAL:
+                    if (a1Toggled) speed = DriveSpeed.HIGH;
+                    else if (dPadDown1Toggled) speed = DriveSpeed.SLOW;
+                    break;
+                case HIGH:
+                    if (a1Toggled) speed = DriveSpeed.NORMAL;
+                    else if (dPadDown1Toggled) speed = DriveSpeed.SLOW;
+            }
 
             // Treat chassis as a diamond
-            float pwxprime = gamepad1.left_stick_x/2.4f;
-            float pwyprime = -gamepad1.left_stick_y/2.4f;
-            float pwx = (pwxprime - pwyprime)/(float)Math.sqrt(2);
-            float pwy = (pwxprime + pwyprime)/(float)Math.sqrt(2);
+            float pwxprime = gamepad1.left_stick_x / 2.4f;
+            float pwyprime = -gamepad1.left_stick_y / 2.4f;
+            float pwx = (pwxprime - pwyprime) / (float) Math.sqrt(2);
+            float pwy = (pwxprime + pwyprime) / (float) Math.sqrt(2);
 
             //Treat chassis as a square
 //            float pwx = +gamepad1.left_stick_y/2;
 //            float pwy = +gamepad1.left_stick_x/2;
 
-            float pwa = (gamepad1.left_trigger - gamepad1.right_trigger)/2.8f;
+            float pwa = (gamepad1.left_trigger - gamepad1.right_trigger) / 2.8f;
+            float speedMultiplier = speed == DriveSpeed.NORMAL? 1.2f : speed == DriveSpeed.HIGH? 1.5f : 1.0f;
+            pwx *= speedMultiplier;
+            pwy *= speedMultiplier;
+            pwa *= speedMultiplier;
+
+            telemetry.addData("speed", speed);
+
             bot.setDrivePower(pwx, pwy, pwa);
 
             // Handle AdjustLiftMode
-            if (leftBump2Toggle.update()){
+            if (leftBump2Toggle.update()) {
                 adjustLiftMode = true;
-            } else if (adjustLiftMode && !gamepad2.left_bumper){
+            } else if (adjustLiftMode && !gamepad2.left_bumper) {
                 adjustLiftMode = false;
                 bot.resetLiftEncoder();
             }
 
             // Handle lift
-            if(gamepad2.dpad_up){
-                liftTarget = liftTarget - 20;
-            }else if(gamepad2.dpad_down){
-                liftTarget = liftTarget + 20;
-            } else if(gamepad2.y){
+            if (gamepad2.dpad_up) {
+                liftTarget = liftTarget - 30;
+            } else if (gamepad2.dpad_down) {
+                liftTarget = liftTarget + 30;
+            } else if (gamepad2.y) {
                 liftTarget = OmniBot.LIFT_HIGH;
-            } else if(gamepad2.b){
+            } else if (gamepad2.b) {
                 liftTarget = OmniBot.LIFT_MID;
-            } else if(gamepad2.a){
+            } else if (gamepad2.a) {
                 liftTarget = OmniBot.LIFT_LOW;
             }
 
@@ -78,11 +124,11 @@ public class OmniBotTeleOp extends LinearOpMode {
 
             bot.setLiftPosition(liftTarget);
 
-            telemetry.addData("Lift","tics = %d  target = %d",
+            telemetry.addData("Lift", "tics = %d  target = %d",
                     bot.liftMotor.getCurrentPosition(), liftTarget);
 
             // Handle claw
-            if(x2Toggle.update()) {
+            if (x2Toggle.update()) {
                 clawClosed = !clawClosed;
                 if (clawClosed) {
                     bot.closeClaw();
@@ -91,8 +137,10 @@ public class OmniBotTeleOp extends LinearOpMode {
                 }
             }
 
+
             telemetry.update();
+
         }
-        bot.setDrivePower(0,0, 0);
+        bot.setDriveSpeed(0,0,0);
     }
 }
