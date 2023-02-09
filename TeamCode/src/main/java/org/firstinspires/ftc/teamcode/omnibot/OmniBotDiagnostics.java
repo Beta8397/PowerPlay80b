@@ -103,8 +103,8 @@ public class OmniBotDiagnostics extends LinearOpMode {
 //        telemetry.addData("DIST","F %.1f  B %.1f  R %.1f  L %.1f",bot.getFrontDistance(),
 //                bot.getBackDistance(), bot.getRightDistance(), bot.getLeftDistance());
 
-        telemetry.addData("DIST","F %.1f  B %.1f",bot.getFrontDistance(),
-                bot.getBackDistance());
+        telemetry.addData("DIST","F %.1f  B %.1f   L %.1f   R %.1f",bot.getFrontDistance(),
+                bot.getBackDistance(), bot.getLeftDistance(), bot.getRightDistance());
 
 //        telemetry.addData("RIGHT DIST", bot.rightDist.getDistance(DistanceUnit.INCH));
 

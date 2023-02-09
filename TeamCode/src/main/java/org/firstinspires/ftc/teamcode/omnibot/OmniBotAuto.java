@@ -31,6 +31,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
     public final MotionProfile midSpeed = new MotionProfile(10, 16, 16);
     public final MotionProfile highSpeed = new MotionProfile(10, 20, 16);
+    public final MotionProfile ultraHighSpeed = new MotionProfile(16, 32, 24);
     public final MotionProfile lowSpeed = new MotionProfile(6, 6, 0);
 
     public enum SignalResult{ONE, TWO, THREE}
