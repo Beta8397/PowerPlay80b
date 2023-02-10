@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 
-@Autonomous(name = "Wiggle3")
-public class Wiggle3 extends OmniBotAuto {
+@Autonomous(name = "Wiggle4")
+public class Wiggle4 extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -152,6 +152,45 @@ public class Wiggle3 extends OmniBotAuto {
 
         switch(signalResult){
             case THREE:
+
+                /*
+                 * Drive back to colored tape
+                 */
+                adjustPositionColor(0.5f, 90, 4, 5, 0.1f);
+                turnToHeading(-135, 3, 6, 120);
+                adjustPositionColor(0.5f, -135, 4, 5, 0.1f);
+                bot.setPose(57.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
+                bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
+                        1, 0, 0, bot.getCovariance().get(1,1)}));
+
+                /*
+                 * Pick up second cone from stack
+                 */
+
+                bot.openClaw();
+                bot.setLiftPosition(-300);
+                sleep(300);
+                driveToPosition(highSpeed, 57.5f, 8.5f, -135, 1, null);
+                bot.closeClaw();
+                sleep(300);
+                bot.setLiftPosition(OmniBot.LIFT_LOW);
+                sleep(200);
+
+                /*
+                 * Drop cone on low jct
+                 */
+
+
+                driveToPosition(highSpeed, 58.5f, 15, -135, 1, null);
+                turnToHeading(90, 3, 6, 150);
+                driveToPosition(highSpeed,  52.75f, 19.25f, 90, 1,
+                        new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, false, true ));
+                bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
+                sleep(200);
+                bot.openClaw();
+                sleep(200);
+                bot.setClawPosition(OmniBot.LIFT_LOW);
+                sleep(200);
                 driveToPosition(highSpeed, bot.getPose().x, bot.getPose().y-3, 90, 1,null);
                 break;
             case TWO:
