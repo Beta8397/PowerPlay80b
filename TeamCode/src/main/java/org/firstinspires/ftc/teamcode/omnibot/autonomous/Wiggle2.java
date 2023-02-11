@@ -12,6 +12,17 @@ import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 
+/**
+ *  Deliver preload cone to low junction. Then get one cone from stack and deliver to
+ *  low junction. Then drive to the appropriate parking zone.
+ *
+ *  TODO: This has been changed some since the Broadalbin-Perth tournament; mainly, the
+ *   turns are faster, but some drives have been changed from vMin/vMax/cp to
+ *   MotionProfile. Also, wiggle syntax has changed a little (WiggleProfile). Will need
+ *   to test thoroughly.
+ *
+ */
+
 @Autonomous(name = "Wiggle2")
 public class Wiggle2 extends OmniBotAuto {
     @Override

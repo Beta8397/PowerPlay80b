@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.omnibot.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
@@ -12,7 +13,16 @@ import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 
+/**
+ *  Deliver preloaded cone, then two cones from stack, to low junctions. Then, if
+ *  parking zone is "3", deliver a third cone from stack to low junction. Then park
+ *  in appropriate zone.
+ *
+ *  This opmode times out for zone 3, so currently disabled.
+ */
+
 @Autonomous(name = "Wiggle4")
+@Disabled
 public class Wiggle4 extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
