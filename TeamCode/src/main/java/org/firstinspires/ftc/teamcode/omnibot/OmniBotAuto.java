@@ -329,6 +329,79 @@ public abstract class OmniBotAuto extends LinearOpMode {
         bot.updateOdometry();
     }
 
+    protected void driveToPositionWiggle(MotionProfile profile, float targetX, float targetY, float targetThetaDegrees,
+                                         float tolerance, float wiggleTime, float wiggleAmplitude,
+                                         float wiggleFrequency, KalmanMeasurementUpdater updater) {
+        float headingTargetRadiansBase = targetThetaDegrees * (float)Math.PI / 180;
+
+        //Starting point
+        float x0 = bot.getPose().x;
+        float y0 = bot.getPose().y;
+
+        ElapsedTime et = new ElapsedTime();
+
+
+        while (opModeIsActive()) {
+
+            // Update bot pose with odometry, and if provided, adjust with Kalman filter
+            bot.updateOdometry();
+
+            float headingTargetRadians;
+            float seconds =  (float)et.seconds();
+
+            if(seconds < wiggleTime){
+                headingTargetRadians = headingTargetRadiansBase +
+                        wiggleAmplitude *
+                                (float)Math.sin(2 * Math.PI * wiggleFrequency * seconds);
+            } else{
+                headingTargetRadians = headingTargetRadiansBase;
+            }
+
+            if (updater != null) {
+                Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
+                bot.adjustPose(updatedPose.x, updatedPose.y);
+            }
+
+            // Distance of botfrom starting point
+            float d0 = (float)Math.hypot(bot.getPose().x - x0, bot.getPose().y - y0);
+
+            // Vector (field coordinates) from bot to target point; d1 is magnitude of this vector
+            float xError = targetX - bot.getPose().x;
+            float yError = targetY - bot.getPose().y;
+            float d1 = (float)Math.hypot(xError, yError);
+
+            if (d1 < tolerance) break;
+
+            // Heading error
+            float thetaError = (float)AngleUtil.normalizeRadians(headingTargetRadians - bot.getPose().theta);
+
+            // Convert the (xError, yError) vector to ROBOT coordinate system (xErrorRobot, yErrorRobot)
+            float sinTheta = (float)Math.sin(bot.getPose().theta);
+            float cosTheta = (float)Math.cos(bot.getPose().theta);
+            float xErrorRobot = xError * sinTheta - yError * cosTheta;
+            float yErrorRobot = xError * cosTheta + yError * sinTheta;
+
+            /*
+             * Robot speed will be the minimum of vMax and the two speeds computed from vMin,
+             * acceleration, and distances from starting and target points
+             */
+            float vMinSqr = profile.vMin * profile.vMin;
+            float speed = (float)Math.min(profile.vMax,
+                    Math.min(Math.sqrt(vMinSqr + 2*d0*profile.accel),
+                            Math.sqrt(vMinSqr + 2*d1*profile.accel)));
+
+            // Robot velocity vector
+            float vxr = speed * xErrorRobot / d1;
+            float vyr = speed * yErrorRobot / d1;
+            float va = 2.0f * thetaError;
+            bot.setDriveSpeed(vxr, vyr, va);
+        }
+        bot.setDriveSpeed(0, 0,0);
+        bot.updateOdometry();
+    }
+
+
+
     public void driveDirection(float speed, float directionDegrees, float targetHeading, float cp,
                           Pred finished){
         float directionRadians = (float)Math.toRadians(directionDegrees);
