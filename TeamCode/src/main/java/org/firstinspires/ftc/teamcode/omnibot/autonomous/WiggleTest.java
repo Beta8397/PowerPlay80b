@@ -37,7 +37,7 @@ public class WiggleTest extends OmniBotAuto {
         bot.setLiftPosition(OmniBot.LIFT_MID - 100);
         //sleep(100);
 
-        //Drive to middle of square, turn, then drive to low junction; NO Kalman
+        //Drive to mid junction; NO Kalman
         driveToPosition(highSpeed, 36, 36, -90, 1, null); // was vmax = 10, vmin = 4
         //turnToHeading(0, 3, 6, 150);
         driveToPosition(midSpeed, 36, 50, -90, 1, null);
