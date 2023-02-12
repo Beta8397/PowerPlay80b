@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 
-@Autonomous(name = "Wiggle3")
-public class Wiggle3 extends OmniBotAuto {
+@Autonomous(name = "WiggleTest")
+public class WiggleTest extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -34,39 +34,55 @@ public class Wiggle3 extends OmniBotAuto {
         telemetry.update();
 
         // Raise lift to the position for low junction
-        bot.setLiftPosition(OmniBot.LIFT_LOW);
-        sleep(100);
+        bot.setLiftPosition(OmniBot.LIFT_MID - 100);
+        //sleep(100);
 
         //Drive to middle of square, turn, then drive to low junction; NO Kalman
-        driveToPosition(highSpeed, 12, 36, -90, 1, null); // was vmax = 10, vmin = 4
-        turnToHeading(0, 3, 6, 150);
-        driveToPosition(highSpeed, 17.5f, 41f, 0, 1,
-                new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_0, true, false, (d) -> d>3 && d<40, null));
+        driveToPosition(highSpeed, 36, 36, -90, 1, null); // was vmax = 10, vmin = 4
+        //turnToHeading(0, 3, 6, 150);
+        driveToPosition(midSpeed, 36, 50, -90, 1, null);
+
+                //new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_NEG_90, true, false, (d) -> d>3 && d<40, null));
+
+        bot.setPivotPosition(OmniBot.PIVOT_SCORING);
+        sleep(400);
+        driveToPosition(lowSpeed, 37.5f, 50.5f, -90, 1, null);
+
+        //driveToPosition(highSpeed, 38, 48, -90, 1, null);
+
+
 
         // Lower lift a little, drop off cone, then raise lift again
-        bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
+        bot.setLiftPosition(OmniBot.LIFT_MID + 200);
         sleep(200);
         bot.openClaw();
         sleep(200);
-        bot.setClawPosition(OmniBot.LIFT_LOW);
+        bot.setClawPosition(OmniBot.LIFT_MID - 200);
         sleep(200);
 
+
+        driveToPosition(highSpeed, 36, 36, -90, 1, null);
+        bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
+
         // Drive back to middle of starting square
-        driveToPosition(ultraHighSpeed, 12, 35.5f, 0, 1,
-                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
+       // driveToPosition(ultraHighSpeed, 12, 35.5f, 0, 1,
+              //  new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
 
         // Drive forward, pushing signal out of the way, using Kalman for X only
-        driveToPosition(ultraHighSpeed, 36, 35.5f, 0,1,
-                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
+        //driveToPosition(ultraHighSpeed, 36, 35.5f, 0,1,
+              //  new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
 
         // Back away, to middle of square, away from signal sleeve, Kalman for X only
-        driveToPosition(ultraHighSpeed, 34, 35.5f, 0, 1,
-                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
+        //driveToPosition(ultraHighSpeed, 34, 35.5f, -90, 1,
+         //       new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
+
+        bot.setLiftPosition(OmniBot.LIFT_LOW);
 
         // Drive toward right wall, using Kalman for X and Y
-        driveToPosition(ultraHighSpeed, 35,13,0,1,
-                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, false, true));
+        driveToPosition(ultraHighSpeed, 35,16,-90,1,
+                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_NEG_90, false, true));
 
+        turnToHeading(0, 3, 6, 150);
 
         // Drive in x direction to cone stack. Stop when color sensor detects red or blue tape
         driveLine( 0, new VectorF(36,13), 0,
@@ -88,9 +104,9 @@ public class Wiggle3 extends OmniBotAuto {
         driveToPosition(highSpeed, 57.5f, 16.5f, 0, 1, null);
         turnToHeading(-135, 3, 6, 150);
         bot.openClaw();
-        bot.setLiftPosition(-440);
+        bot.setLiftPosition(-540);
         sleep(200);
-        driveToPosition(highSpeed, 57.5f, 8.5f, -135, 1, null);
+        driveToPosition(highSpeed, 57.5f, 10.5f, -135, 1, null);
         bot.closeClaw();
         sleep(400);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
@@ -101,7 +117,7 @@ public class Wiggle3 extends OmniBotAuto {
          */
         driveToPosition(highSpeed, 58.5f, 15, -135, 1, null);
         turnToHeading(90, 3, 6, 120);
-        driveToPosition(highSpeed,  51.75f, 18.25f, 90, 1, null);
+        driveToPosition(highSpeed,  52.75f, 17.25f, 90, 1, null);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
@@ -127,9 +143,9 @@ public class Wiggle3 extends OmniBotAuto {
          */
 
         bot.openClaw();
-        bot.setLiftPosition(-300);
+        bot.setLiftPosition(-400);
         sleep(300);
-        driveToPosition(highSpeed, 57.5f, 8.5f, -135, 1, null);
+        driveToPosition(highSpeed, 57.5f, 10.5f, -135, 1, null);
         bot.closeClaw();
         sleep(300);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
@@ -142,8 +158,9 @@ public class Wiggle3 extends OmniBotAuto {
 
         driveToPosition(highSpeed, 58.5f, 15, -135, 1, null);
         turnToHeading(90, 3, 6, 150);
-        driveToPosition(highSpeed,  52.75f, 19.25f, 90, 1,
+        driveToPosition(highSpeed,  52.75f, 18.25f, 90, 1,
                 new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, false, true ));
+        sleep(200);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
@@ -161,7 +178,7 @@ public class Wiggle3 extends OmniBotAuto {
                 bot.setPose(57.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
                 bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
                         1, 0, 0, bot.getCovariance().get(1,1)}));
-                driveToPosition(ultraHighSpeed, bot.getPose().x, 36, 90, 1,
+                driveToPosition(ultraHighSpeed, bot.getPose().x, 33, 90, 1,
                         new WiggleProfile(3, 0.1f, 2),
                         new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, false, true));
                 break;
@@ -171,7 +188,7 @@ public class Wiggle3 extends OmniBotAuto {
                 bot.setPose(57.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
                 bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
                         1, 0, 0, bot.getCovariance().get(1,1)}));
-                driveToPosition(ultraHighSpeed, bot.getPose().x, 58, 90, 1,
+                driveToPosition(ultraHighSpeed, bot.getPose().x, 55, 90, 1,
                         new WiggleProfile(3, 0.1f, 2),
                         new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, false, true));
                 break;

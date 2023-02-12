@@ -34,6 +34,12 @@ public class OmniBotTeleOp extends LinearOpMode {
         }
     };
 
+    ButtonToggle y1Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
+        protected boolean getButtonState() {
+            return gamepad1.y;
+        }
+    };
+
     ButtonToggle dPadDown1Toggle = new ButtonToggle(ButtonToggle.Mode.PRESSED) {
         @Override
         protected boolean getButtonState() {
@@ -48,6 +54,8 @@ public class OmniBotTeleOp extends LinearOpMode {
         int liftTarget = bot.liftMotor.getCurrentPosition();
 
         boolean clawClosed = false;
+        boolean pivotScoring = false;
+
 
         speed = DriveSpeed.NORMAL;
 
@@ -134,6 +142,17 @@ public class OmniBotTeleOp extends LinearOpMode {
                     bot.closeClaw();
                 } else {
                     bot.openClaw();
+                }
+            }
+
+            // Handle Pivot
+
+            if (y1Toggle.update()){
+                pivotScoring = !pivotScoring;
+                if (pivotScoring){
+                    bot.scorePosition();
+                } else {
+                    bot.grabPosition();
                 }
             }
 

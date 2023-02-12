@@ -42,6 +42,7 @@ OmniBot {
     BNO055Enhanced imu;
     public  DcMotorEx liftMotor;
     Servo clawServo;
+    Servo pivotServo;
     public DistanceSensor frontDist;
     public DistanceSensor backDist;
     public DistanceSensor rightDist;
@@ -69,6 +70,8 @@ OmniBot {
     public static final int LIFT_LOW = -1140;
     public static final float CLAW_OPEN = 0.62f;
     public static final float CLAW_CLOSED = 0.32f;
+    public static final float PIVOT_GRABBING = 0.07f;
+    public static final float PIVOT_SCORING = 0.26f;
     public static final float HEADING_VARIANCE = (float)Math.toRadians(2) * (float)Math.toRadians(2);
     public static final float POSITION_VARIANCE_COEFF = 0.16f;
 
@@ -115,6 +118,7 @@ OmniBot {
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         clawServo = hwmap.get(Servo.class, "clawServo");
+        pivotServo = hwmap.get(Servo.class, "pivotServo");
 
         frontDist = hwmap.get(DistanceSensor.class,"frontDist");
         backDist = hwmap.get(DistanceSensor.class,"backDist");
@@ -277,6 +281,12 @@ OmniBot {
     public void openClaw(){setClawPosition(CLAW_OPEN);}
 
     public void closeClaw(){setClawPosition(CLAW_CLOSED);}
+
+    public void setPivotPosition(float pos){pivotServo.setPosition(pos);}
+
+    public void grabPosition(){setPivotPosition(PIVOT_GRABBING);}
+
+    public void scorePosition(){setPivotPosition(PIVOT_SCORING);}
 
     public void setLiftPosition(int tics){
         liftMotor.setTargetPosition(tics);
