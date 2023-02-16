@@ -36,6 +36,7 @@ public class Wiggle2 extends OmniBotAuto {
         VuforiaNavigator.activate(null, webcamName);
 
         bot.closeClaw();
+        bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
 
         waitForStart();
 
@@ -51,7 +52,7 @@ public class Wiggle2 extends OmniBotAuto {
         //Drive to middle of square, turn, then drive to low junction; NO Kalman
         driveToPosition(midSpeed, 12, 36, -90, 1, null); // was vmax = 10, vmin = 4
         turnToHeading(0, 3, 6, 120);
-        driveToPosition(midSpeed, 19f, 42f, 0, 1, null);
+        driveToPosition(midSpeed, 17.0f, 41.0f, 0, 1, null);
 
         // Lower lift a little, drop off cone, then raise lift again
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
@@ -86,21 +87,21 @@ public class Wiggle2 extends OmniBotAuto {
                 ()->bot.getHSV()[1]>0.4 || bot.getPose().x>64);
 
         //Adjust x position until color sensor is at near edge of tape
-        adjustPositionColor(0.5f, 0, 4, 5, 0.1f);
+        adjustPositionColor(0.5f,-1, 0, 4, 5, 0.1f);
 
-        bot.setPose(57.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
+        bot.setPose(56.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
         bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
                 1, 0, 0, bot.getCovariance().get(1,1)}));
 
         /* Back away from the cone stack a few inches, turn so claw faces stack, drive back to stack
          * and grab cone
          */
-        driveToPosition(midSpeed, 57.5f, 16.5f, 0, 1, null);
+        driveToPosition(midSpeed, 56.5f, 16.5f, 0, 1, null);
         turnToHeading(-135, 3, 6, 120);
         bot.openClaw();
         bot.setLiftPosition(-440);
         sleep(300);
-        driveToPosition(midSpeed, 57.5f, 8, -135, 1, null);
+        driveToPosition(midSpeed, 56.5f, 9, -135, 1, null);
         bot.closeClaw();
         sleep(300);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
@@ -111,12 +112,12 @@ public class Wiggle2 extends OmniBotAuto {
          */
         driveToPosition(midSpeed, 58.5f, 15, -135, 1, null);
         turnToHeading(90, 3, 6, 120);
-        driveToPosition(midSpeed,  51.75f, 18.25f, 90, 1, null);
+        driveToPosition(midSpeed,  52.25f, 15.75f, 90, 1, null);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
         sleep(200);
-        bot.setClawPosition(OmniBot.LIFT_LOW);
+        bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(200);
 
         /*
@@ -128,6 +129,8 @@ public class Wiggle2 extends OmniBotAuto {
         float targetX = signalResult == signalResult.THREE? 38:36;
         driveToPosition(speedMax,speedMin,targetX,13,90,4,1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_90, true, true));
+        bot.setLiftPosition(OmniBot.LIFT_MAX);
+        bot.closeClaw();
 
         if(signalResult == SignalResult.ONE){
             driveToPosition(new MotionProfile(6, 20, 16), 36f, 58,
