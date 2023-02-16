@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 
-@Autonomous(name = "WiggleTest")
-public class WiggleTest extends OmniBotAuto {
+@Autonomous(name = "WiggleTwoLow")
+public class WiggleTwoLow extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -33,12 +33,14 @@ public class WiggleTest extends OmniBotAuto {
         telemetry.addData("Signal", signalResult);
         telemetry.update();
 
-        // Raise lift to the position for low junction
+        // Raise lift to the position for middle junction
         bot.setLiftPosition(OmniBot.LIFT_MID - 100);
         //sleep(100);
 
         //Drive to mid junction; NO Kalman
-        driveToPosition(highSpeed, 36, 36, -90, 1, null); // was vmax = 10, vmin = 4
+        driveToPosition(highSpeed, 39, 36, -90, 1, null); // was vmax = 10, vmin = 4
+        driveToPosition(midSpeed, 36, 36, -90, 1, null);
+
         //turnToHeading(0, 3, 6, 150);
         driveToPosition(midSpeed, 36, 50, -90, 1, null);
 
@@ -46,7 +48,7 @@ public class WiggleTest extends OmniBotAuto {
 
         bot.setPivotPosition(OmniBot.PIVOT_SCORING);
         sleep(400);
-        driveToPosition(lowSpeed, 37.5f, 50.5f, -90, 1, null);
+        driveToPosition(lowSpeed, 38, 50.5f, -90, 1, null);
 
         //driveToPosition(highSpeed, 38, 48, -90, 1, null);
 
@@ -57,7 +59,7 @@ public class WiggleTest extends OmniBotAuto {
         sleep(200);
         bot.openClaw();
         sleep(200);
-        bot.setClawPosition(OmniBot.LIFT_MID - 200);
+        bot.setClawPosition(OmniBot.LIFT_MID - 600);
         sleep(200);
 
 
@@ -79,20 +81,18 @@ public class WiggleTest extends OmniBotAuto {
         bot.setLiftPosition(OmniBot.LIFT_LOW);
 
         // Drive toward right wall, using Kalman for X and Y
-        driveToPosition(ultraHighSpeed, 35,16,-90,1,
-                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_NEG_90, false, true));
+        driveToPosition(ultraHighSpeed, 35,16,-90,1, null);
 
-        turnToHeading(0, 3, 6, 150);
 
         // Drive in x direction to cone stack. Stop when color sensor detects red or blue tape
-        driveLine( 0, new VectorF(36,13), 0,
+        driveLine( -90, new VectorF(36,13),0,
                 highSpeed, 2, 22.5f,
                 new KalmanDistanceUpdater(null, null, null,
-                        bot.rightDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50),
+                        bot.frontDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50),
                 ()->bot.getHSV()[1]>0.4 || bot.getPose().x>64);
 
         //Adjust x position until color sensor is at near edge of tape
-        adjustPositionColor(0.5f, 0, 4, 5, 0.1f);
+        adjustPositionColor(0.5f, -90, 4, 5, 0.1f);
 
         bot.setPose(57.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
         bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
@@ -101,7 +101,7 @@ public class WiggleTest extends OmniBotAuto {
         /* Back away from the cone stack a few inches, turn so claw faces stack, drive back to stack
          * and grab cone
          */
-        driveToPosition(highSpeed, 57.5f, 16.5f, 0, 1, null);
+        driveToPosition(highSpeed, 57.5f, 16.5f, -90, 1, null);
         turnToHeading(-135, 3, 6, 150);
         bot.openClaw();
         bot.setLiftPosition(-540);
