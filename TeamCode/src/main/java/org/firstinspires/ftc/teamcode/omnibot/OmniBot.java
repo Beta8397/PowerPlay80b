@@ -69,9 +69,11 @@ OmniBot {
     public static final int LIFT_MID = -1765;
     public static final int LIFT_LOW = -1140;
     public static final float CLAW_OPEN = 0.62f;
+    public static final float CLAW_OPEN_TELE = 0.75f;
     public static final float CLAW_CLOSED = 0.32f;
     public static final float PIVOT_GRABBING = 0.07f;
     public static final float PIVOT_SCORING = 0.26f;
+    public static final float PIVOT_TELE = 0.0f;
     public static final float HEADING_VARIANCE = (float)Math.toRadians(2) * (float)Math.toRadians(2);
     public static final float POSITION_VARIANCE_COEFF = 0.16f;
 

@@ -56,6 +56,9 @@ public class OmniBotTeleOp extends LinearOpMode {
         boolean clawClosed = false;
         boolean pivotScoring = false;
 
+        bot.setClawPosition(OmniBot.CLAW_OPEN_TELE);
+        bot.setPivotPosition(OmniBot.PIVOT_TELE);
+
 
         speed = DriveSpeed.NORMAL;
 
@@ -141,7 +144,7 @@ public class OmniBotTeleOp extends LinearOpMode {
                 if (clawClosed) {
                     bot.closeClaw();
                 } else {
-                    bot.openClaw();
+                    bot.setClawPosition(OmniBot.CLAW_OPEN_TELE);
                 }
             }
 
@@ -152,7 +155,7 @@ public class OmniBotTeleOp extends LinearOpMode {
                 if (pivotScoring){
                     bot.scorePosition();
                 } else {
-                    bot.grabPosition();
+                    bot.setPivotPosition(OmniBot.PIVOT_TELE);
                 }
             }
 

@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 
-@Autonomous(name = "WiggleAllLeavels")
+@Autonomous(name = "WiggleAllLevels")
 public class WiggleAllLeavels extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
