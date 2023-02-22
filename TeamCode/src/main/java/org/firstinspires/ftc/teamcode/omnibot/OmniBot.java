@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.omnibot;
 import android.graphics.Color;
 
 //import com.outoftheboxrobotics.photoncore.PhotonCore;
+import com.outoftheboxrobotics.photoncore.Neutrino.Rev2MSensor.Rev2mDistanceSensorEx;
 import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.ColorSensor;

@@ -95,7 +95,7 @@ public class CalibrateDist extends LinearOpMode {
         telemetry.addData("Avg Readings", stringFromArray(avgDistances));
         telemetry.addData("Std Devs", stringFromArray(stdDevs));
         telemetry.addData("Lin Regression", stringFromArray(aLin.getData()));
-        telemetry.addData("Quad Regression", stringFromArray(aQuad.getData()));
+        telemetry.addData("Quad Regression", stringFromArray2(aQuad.getData()));
         telemetry.update();
 
         while (opModeIsActive()) continue;
@@ -136,6 +136,15 @@ public class CalibrateDist extends LinearOpMode {
         StringBuilder sb = new StringBuilder();
         for (float f: array){
             String s = String.format("%.3f ", f);
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    private String stringFromArray2(float[] array){
+        StringBuilder sb = new StringBuilder();
+        for (float f: array){
+            String s = String.format("%.4f ", f);
             sb.append(s);
         }
         return sb.toString();
