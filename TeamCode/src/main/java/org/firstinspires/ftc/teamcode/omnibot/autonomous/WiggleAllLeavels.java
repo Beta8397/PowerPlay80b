@@ -41,7 +41,7 @@ public class WiggleAllLeavels extends OmniBotAuto {
         driveToPosition(midSpeed, 36, 36, -90, 1,null);
 
         //turnToHeading(0, 3, 6, 150);
-        driveToPosition(midSpeed, 36, 50, -90, 1, null);
+        driveToPosition(highSpeed, 36, 50, -90, 1, null); // was midSpeed
 
 
         bot.setPivotPosition(OmniBot.PIVOT_SCORING);
@@ -58,12 +58,26 @@ public class WiggleAllLeavels extends OmniBotAuto {
         sleep(200);
 
 
-        driveToPosition(highSpeed, 36, 36, -90, 1, null);
-        bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
-        bot.setLiftPosition(OmniBot.LIFT_LOW);
+//        driveToPosition(highSpeed, 36, 36, -90, 1, null);
+//        bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
+//        bot.setLiftPosition(OmniBot.LIFT_LOW);
+//
+//        // Drive toward right wall
+//        driveToPosition(ultraHighSpeed, 35,16,-90,1, null);
 
-        // Drive toward right wall
-        driveToPosition(ultraHighSpeed, 35,16,-90,1, null);
+        driveToPosition(ultraHighSpeed, 35, 16, -90, 1,
+                new WiggleProfile(5, 0.1f, 2),
+                new Runnable() {
+                    boolean done = false;
+                    @Override
+                    public void run() {
+                        if (!done && bot.getPose().y<36) {
+                            bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
+                            bot.setLiftPosition(OmniBot.LIFT_LOW);
+                        }
+                    }
+                },
+                new PowerPlayDistUpdater(Quadrant.RED_RIGHT,HeadingIndex.H_NEG_90,false,true));
 
 
         // Drive in x direction to cone stack. Stop when color sensor detects red or blue tape
@@ -139,7 +153,7 @@ public class WiggleAllLeavels extends OmniBotAuto {
         driveToPosition(midSpeed, 58.5f, 15, -135, 1, null);
         turnToHeading(-90, 3, 6, 150);
 
-        driveToPosition(safeSpeed, 60, 50.5f, -90, 1,
+        driveToPosition(highSpeed, 60, 50.5f, -90, 1, // was safeSpeed
                 new WiggleProfile(5, 0.1f, 2),
                 new Runnable() {
                     boolean liftUp = false;
@@ -159,10 +173,10 @@ public class WiggleAllLeavels extends OmniBotAuto {
         sleep(200);
         bot.openClaw();
         sleep(200);
-        bot.setLiftPosition(OmniBot.LIFT_HIGH);
+        bot.setLiftPosition(OmniBot.LIFT_HIGH -200);
         sleep(200);
         driveToPosition(midSpeed,  60, 50.5f, -90, 1, null);
-        bot.setLiftPosition(OmniBot.LIFT_LOW);
+        bot.setLiftPosition(OmniBot.LIFT_MAX);
         bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
 
 

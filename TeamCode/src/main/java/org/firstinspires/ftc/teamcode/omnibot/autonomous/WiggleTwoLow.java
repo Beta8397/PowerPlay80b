@@ -177,7 +177,7 @@ public class WiggleTwoLow extends OmniBotAuto {
         driveToPosition(speedMax, speedMin, targetX, 13, 90, 4, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_90, true, true));
         bot.setLiftPosition(OmniBot.LIFT_MAX);
-        bot.closeClaw();
+        //bot.closeClaw();
 
         if (signalResult == SignalResult.ONE) {
             driveToPosition(new MotionProfile(6, 20, 16), 36f, 59.5f,

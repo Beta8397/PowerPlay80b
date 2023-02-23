@@ -71,7 +71,7 @@ OmniBot {
     public static final int LIFT_LOW = -1140;
     public static final float CLAW_OPEN = 0.62f;
     public static final float CLAW_OPEN_TELE = 0.75f;
-    public static final float CLAW_CLOSED = 0.32f;
+    public static final float CLAW_CLOSED = 0.4f; // was .32
     public static final float PIVOT_GRABBING = 0.07f;
     public static final float PIVOT_SCORING = 0.26f;
     public static final float PIVOT_TELE = 0.0f;
