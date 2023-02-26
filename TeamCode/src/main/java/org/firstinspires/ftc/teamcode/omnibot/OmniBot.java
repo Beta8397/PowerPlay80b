@@ -72,9 +72,10 @@ OmniBot {
     public static final float CLAW_OPEN = 0.62f;
     public static final float CLAW_OPEN_TELE = 0.75f;
     public static final float CLAW_CLOSED = 0.4f; // was .32
-    public static final float PIVOT_GRABBING = 0.07f;
-    public static final float PIVOT_SCORING = 0.26f;
-    public static final float PIVOT_TELE = 0.0f;
+    public static final float PIVOT_GRABBING = 0.72f;
+    public static final float PIVOT_SCORING = 0.88f;
+    public static final float PIVOT_FRONT = 0.54f;
+    public static final float PIVOT_TELE = 0.67f;
     public static final float HEADING_VARIANCE = (float)Math.toRadians(2) * (float)Math.toRadians(2);
     public static final float POSITION_VARIANCE_COEFF = 0.16f;
 
