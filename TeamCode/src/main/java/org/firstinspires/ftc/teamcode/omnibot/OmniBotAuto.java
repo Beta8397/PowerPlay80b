@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Predicate;
 
+import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -26,6 +27,7 @@ import java.util.List;
 public abstract class OmniBotAuto extends LinearOpMode {
 
     public static float YMAX = 141;
+    public static float X_TAPE_EDGE = 57.5f;
 
     protected OmniBot bot = new OmniBot();
 
@@ -648,25 +650,194 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
             bot.setDriveSpeed(vxr, vyr, va);
         }
-        float x0 = bot.getPose().x;
-        while (opModeIsActive()) {
-            bot.updateOdometry();
-            if (xOffset < 0) {
-                if (bot.getPose().x < (x0 + xOffset)) break;
-            } else {
-                if (bot.getPose().x > (x0 + xOffset)) break;
-            }
-            float vx = maxSpeed * Math.signum(xOffset);
-            float vxr = vx * (float)Math.sin(bot.getPose().theta);
-            float vyr = vx * (float)Math.cos(bot.getPose().theta);
-            float va = 2.0f * (float)AngleUtil.normalizeRadians(targetHeadingRadians - bot.getPose().theta);
-
-            bot.setDriveSpeed(vxr, vyr, va);
-        }
-        bot.setDriveSpeed(0,0,0);
+        driveToPosition(maxSpeed, maxSpeed/2, bot.getPose().x + xOffset, bot.getPose().y, targetHeadingDegrees, 2, 0.5f);
         bot.updateOdometry();
     }
 
+    public void driveTapeToStack45(Quadrant quadrant, float xOffset, float initHeadingDegrees, int liftPosition){
+        //Adjust x position until color sensor is at near edge of tape
+        float adjustedX = X_TAPE_EDGE + xOffset;
+        adjustPositionColor(0.5f, xOffset,initHeadingDegrees, 4, 5, 0.1f);
+
+        bot.setPose(adjustedX, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
+        bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
+                1, 0, 0, bot.getCovariance().get(1,1)}));
+
+        /* Back away from the cone stack a few inches, turn so claw faces stack, drive back to stack
+         * and grab first stack cone
+         */
+        if(quadrant == Quadrant.BLUE_RIGHT || quadrant == Quadrant.RED_RIGHT) {
+            driveToPosition(highSpeed, adjustedX, 16.5f, initHeadingDegrees, 1, null);
+            turnToHeading(-135, 3, 6, 150);
+            bot.openClaw();
+            bot.setLiftPosition(liftPosition);
+            sleep(200);
+            driveToPosition(highSpeed, adjustedX, 10.5f, -135, 1, null);
+            bot.closeClaw();
+            sleep(400);
+        } else{
+            driveToPosition(highSpeed, adjustedX, 124.5f, initHeadingDegrees, 1, null);
+            turnToHeading(45, 3, 6, 150);
+            bot.openClaw();
+            bot.setLiftPosition(-440);
+            sleep(200);
+            driveToPosition(highSpeed, adjustedX, 130.5f, 45, 1, null);
+            bot.closeClaw();
+            sleep(400);
+        }
+    }
+
+    public void deliverMidAndLow(Quadrant quadrant, float xOffset){
+        deliverMid(quadrant);
+        if(quadrant == Quadrant.BLUE_RIGHT || quadrant == Quadrant.RED_RIGHT){
+            driveToPosition(ultraHighSpeed, 35, 16, -90, 1,
+                    new WiggleProfile(5, 0.1f, 2),
+                    new Runnable() {
+                        boolean done = false;
+                        @Override
+                        public void run() {
+                            if (!done && bot.getPose().y<36) {
+                                bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
+                                bot.setLiftPosition(OmniBot.LIFT_LOW);
+                            }
+                        }
+                    },
+                    new PowerPlayDistUpdater(Quadrant.RED_RIGHT,HeadingIndex.H_NEG_90,false,true));
+
+
+            // Drive in x direction to cone stack. Stop when color sensor detects red or blue tape
+            driveLine( -90, new VectorF(36,16),0,
+                    highSpeed, 2, 22.5f,
+                    new KalmanDistanceUpdater(null, null, null,
+                            bot.frontDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50),
+                    ()->bot.getHSV()[1]>0.4 || bot.getPose().x>64);
+
+            // Drive to stack and pick up cone
+            float adjustedX = X_TAPE_EDGE + xOffset;
+            driveTapeToStack45(quadrant, xOffset, -90, -440);
+            bot.setLiftPosition(OmniBot.LIFT_LOW);
+            sleep(200);
+
+            /*
+             * Back away from cone stack, turn, drive to junction, and drop off first stack cone on low junction
+             */
+            driveToPosition(highSpeed, adjustedX, 15, -135, 1, null);
+            turnToHeading(90, 3, 6, 120);
+            driveToPosition(highSpeed,  52.25f, 17.5f, 90, 1, null);
+        } else{
+            driveToPosition(ultraHighSpeed, 35, 126, -90, 1,
+                    new WiggleProfile(5, 0.1f, 2),
+                    new Runnable() {
+                        boolean done = false;
+                        @Override
+                        public void run() {
+                            if (!done && bot.getPose().y>107) {
+                                bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
+                                bot.setLiftPosition(OmniBot.LIFT_LOW);
+                            }
+                        }
+                    },
+                    new PowerPlayDistUpdater(Quadrant.BLUE_LEFT,HeadingIndex.H_NEG_90,false,true));
+
+
+            // Drive in x direction to cone stack. Stop when color sensor detects red or blue tape
+            driveLine( -90, new VectorF(36,126), 0,
+                    highSpeed, 2, 22.5f,
+                    new PowerPlayDistUpdater(Quadrant.BLUE_LEFT, HeadingIndex.H_NEG_90, false, true,
+                            null, d -> d>3 && d<36 && bot.getPose().x < 50),
+                    ()->bot.getHSV()[1]>0.4 || bot.getPose().x>64);
+
+            //Adjust x position until color sensor is at near edge of tape
+            float adjustedX = X_TAPE_EDGE + xOffset;
+            driveTapeToStack45(quadrant, xOffset, -90, -440);
+            bot.setLiftPosition(OmniBot.LIFT_LOW);
+            sleep(200);
+
+            /*
+             * Back away from cone stack, turn, drive to junction, and drop off cone.
+             */
+            driveToPosition(highSpeed, adjustedX, 123.5f, 45, 1, null);
+            turnToHeading(180, 3, 6, 120);
+            driveToPosition(highSpeed,  52.25f, 123.5f, 180, 1, null);
+        }
+        bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
+        sleep(200);
+        bot.openClaw();
+        sleep(200);
+        bot.setLiftPosition(OmniBot.LIFT_LOW);
+        sleep(200);
+    }
+
+    public void deliverMid(Quadrant quadrant){
+        // Raise lift to the position for middle junction
+        bot.setLiftPosition(OmniBot.LIFT_MID - 100);
+        if(quadrant == Quadrant.BLUE_RIGHT || quadrant == Quadrant.RED_RIGHT) {
+            //Drive to mid junction; NO Kalman
+            driveToPosition(highSpeed, 39, 36, -90, 1, null);
+            driveToPosition(midSpeed, 36, 36, -90, 1, null);
+            driveToPosition(highSpeed, 36, 50, -90, 1, null); // was midSpeed
+
+
+            bot.setPivotPosition(OmniBot.PIVOT_SCORING);
+            sleep(400);
+            driveToPosition(lowSpeed, 38, 50.5f, -90, 1, null);
+        } else{
+            driveToPosition(highSpeed, 39, 105, -90, 1,
+                    new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_NEG_90, true, false)); // was vmax = 10, vmin = 4
+            driveToPosition(midSpeed, 36, 105, -90, 1, null);
+
+            driveToPosition(midSpeed, 36, 97, -90, 1, null);
+
+            bot.setPivotPosition(OmniBot.PIVOT_SCORING);
+            sleep(400);
+            driveToPosition(lowSpeed, 39, 97, -90, 1, null);
+        }
+
+
+        // Lower lift a little, drop off cone, then raise lift again
+        bot.setLiftPosition(OmniBot.LIFT_MID + 200);
+        sleep(200);
+        bot.openClaw();
+        sleep(400);
+        bot.setLiftPosition(OmniBot.LIFT_MID);
+        sleep(200);
+    }
+
+    public void parkFromLowJunction(Quadrant quadrant, SignalResult signalResult){
+        if (quadrant == Quadrant.BLUE_RIGHT || quadrant == Quadrant.RED_RIGHT){
+            driveToPosition(highSpeed, bot.getPose().x, bot.getPose().y-3, 90, 1,null);
+            switch(signalResult){
+                case THREE:
+                    break;
+                case TWO:
+                case ONE:
+                    driveToPosition(ultraHighSpeed, 36, bot.getPose().y, 90, 1,
+                            new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, true,true));
+                    float targetY = signalResult == SignalResult.ONE? 60 : 36;
+                    driveToPosition(ultraHighSpeed, 36, targetY, 90, 1,
+                            new WiggleProfile(3, 0.1f, 2),
+                            new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, true, true,
+                                    d-> d>3 && d<40 && Math.abs(d+6-bot.getPose().x)<10, d-> d>3 && d<40));
+                    break;
+            }
+        } else {
+            driveToPosition(highSpeed, 58.75f, 128.75f,180, 1, null);
+
+            switch(signalResult){
+                case THREE:
+                case TWO:
+                    driveToPosition(ultraHighSpeed, 35, 128.75f, 180, 1,
+                            new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_180, true, true));
+                    float targetY = signalResult == SignalResult.THREE? 84 : 108;
+                    driveToPosition(highSpeed, 35, targetY, 180, 1, new WiggleProfile(5, 0.1f, 2),
+                            new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_180, true, true,
+                                    (d)-> d>3 && d<48 && Math.abs(d + 6 - bot.getPose().x) < 10, (d) -> d>3 && d>48));
+                    break;
+                case ONE:
+                    break;
+            }
+        }
+    }
 
     public class PowerPlayDistUpdater extends KalmanDistanceUpdater {
 

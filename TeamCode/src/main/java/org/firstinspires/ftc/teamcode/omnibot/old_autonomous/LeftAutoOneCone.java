@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.omnibot.autonomous;
+package org.firstinspires.ftc.teamcode.omnibot.old_autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 

@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.omnibot.autonomous;
+package org.firstinspires.ftc.teamcode.omnibot.old_autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
@@ -11,9 +10,9 @@ import org.firstinspires.ftc.teamcode.omnibot.OmniBot;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
-@Disabled
-@Autonomous(name = "Blue Right Auto Hybrid")
-public class BlueRightAutoHybrid extends OmniBotAuto {
+
+@Autonomous(name = "Blue Right Auto Two Cone")
+public class BlueRightAutoTwoCone extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -39,7 +38,7 @@ public class BlueRightAutoHybrid extends OmniBotAuto {
         //Drive to middle of square, turn, then drive to low junction; NO Kalman
         driveToPosition(10, 4, 12, 36, -90, 2, 1);
         turnToHeading(0, 3, 6, 60);
-        driveToPosition(10, 4, 18.5f, 42.5f, 0, 2, 1);
+        driveToPosition(10, 4, 18f, 43f, 0, 2, 1);
 
         // Lower lift a little, drop off cone, then raise lift again
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
@@ -61,21 +60,13 @@ public class BlueRightAutoHybrid extends OmniBotAuto {
         driveToPosition(16, 4, 35, 35.5f, 0, 4, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
 
-        if (signalResult == SignalResult.ONE){
-            driveToPosition(10, 4, 36, 59, 0, 2, 1,
-                    new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, false, true));
-            return;
-        }
-
-        // If we reach this point, signal result if TWO OR THREE
-
         // Drive toward right wall, using Kalman for X and Y
         driveToPosition(16,4,35,13,0,4,1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, false, true));
 
 
         // Drive in x direction to cone stack. Stop when color sensor detects red or blue tape
-        driveLine(0, new VectorF(36,13), 0,
+        driveLine( 0, new VectorF(36,13), 0,
                 new MotionProfile(4, 16, 16), 2, 22.5f,
                 new KalmanDistanceUpdater(null, null, null,
                         bot.rightDist, (d)->d+6, (d)->d>3 && d< 48 && bot.getPose().x < 50),
@@ -107,7 +98,7 @@ public class BlueRightAutoHybrid extends OmniBotAuto {
          */
         driveToPosition(10, 4, 58.5f, 15, -135, 4, 1);
         turnToHeading(90, 3, 6, 60);
-        driveToPosition(10, 4, 51.25f, 16.75f, 90, 4, 1);
+        driveToPosition(10, 4, 52.25f, 18.75f, 90, 4, 1);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
@@ -119,7 +110,10 @@ public class BlueRightAutoHybrid extends OmniBotAuto {
          * Drive to the appropriate parking location.
          */
         driveToPosition(16, 4, 58.5f, 13, 90, 4, 1);
-        if(signalResult == SignalResult.TWO){
+        if(signalResult == SignalResult.ONE){
+            driveToPosition(new MotionProfile(4, 16, 16), 58.5f, 61,
+                    90, 1, null);
+        }else if(signalResult == SignalResult.TWO){
             driveToPosition(16, 4, 58.5f, 36, 90, 4, 1);
         }
     }

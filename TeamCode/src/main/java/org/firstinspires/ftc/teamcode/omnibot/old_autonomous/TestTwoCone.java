@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.omnibot.autonomous;
+package org.firstinspires.ftc.teamcode.omnibot.old_autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
@@ -11,9 +10,9 @@ import org.firstinspires.ftc.teamcode.omnibot.OmniBot;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
-@Disabled
-@Autonomous(name = "Red Right Auto Hybrid")
-public class RedRightAutoHybrid extends OmniBotAuto {
+
+@Autonomous(name = "Test Two Cone")
+public class TestTwoCone extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -39,7 +38,7 @@ public class RedRightAutoHybrid extends OmniBotAuto {
         //Drive to middle of square, turn, then drive to low junction; NO Kalman
         driveToPosition(10, 4, 12, 36, -90, 2, 1);
         turnToHeading(0, 3, 6, 60);
-        driveToPosition(10, 4, 18.5f, 42.5f, 0, 2, 1);
+        driveToPosition(10, 4, 19f, 42f, 0, 2, 1);
 
         // Lower lift a little, drop off cone, then raise lift again
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
@@ -61,14 +60,6 @@ public class RedRightAutoHybrid extends OmniBotAuto {
         driveToPosition(16, 4, 35, 35.5f, 0, 4, 1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, true, false));
 
-        if (signalResult == SignalResult.ONE){
-            driveToPosition(10, 4, 36, 59, 0, 2, 1,
-                    new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, false, true));
-            return;
-        }
-
-        // If we reach this point, signal result if TWO OR THREE
-
         // Drive toward right wall, using Kalman for X and Y
         driveToPosition(16,4,35,13,0,4,1,
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_0, false, true));
@@ -82,7 +73,7 @@ public class RedRightAutoHybrid extends OmniBotAuto {
                 ()->bot.getHSV()[1]>0.4 || bot.getPose().x>64);
 
         //Adjust x position until color sensor is at near edge of tape
-        adjustPositionColor(0.4f, 0, 4, 5, 0.1f);
+        adjustPositionColor(0.5f, 0, 4, 5, 0.1f);
 
         bot.setPose(57.5f, bot.getPose().y, (float)Math.toDegrees(bot.getPose().theta));
         bot.setCovariance(new GeneralMatrixF(2,2, new float[]{
@@ -107,7 +98,7 @@ public class RedRightAutoHybrid extends OmniBotAuto {
          */
         driveToPosition(10, 4, 58.5f, 15, -135, 4, 1);
         turnToHeading(90, 3, 6, 60);
-        driveToPosition(10, 4, 51.25f, 16.75f, 90, 4, 1);
+        driveToPosition(10, 4, 51.75f, 18.25f, 90, 4, 1);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
@@ -118,9 +109,22 @@ public class RedRightAutoHybrid extends OmniBotAuto {
         /*
          * Drive to the appropriate parking location.
          */
-        driveToPosition(16, 4, 58.5f, 13, 90, 4, 1);
-        if(signalResult == SignalResult.TWO){
-            driveToPosition(16, 4, 58.5f, 36, 90, 4, 1);
+        driveToPosition(20, 6, 52.25f, 13, 90, 4, 1);
+        float speedMax = signalResult == signalResult.THREE? 10:20;
+        float speedMin = signalResult == signalResult.THREE? 4:6;
+        float targetX = signalResult == signalResult.THREE? 38:36;
+        driveToPosition(speedMax,speedMin,targetX,13,90,4,1,
+                new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_90, true, true));
+
+        if(signalResult == SignalResult.ONE){
+            driveToPosition(new MotionProfile(6, 20, 16), 36f, 58,
+                    90, 1,
+                    new PowerPlayDistUpdater(Quadrant.RED_RIGHT,HeadingIndex.H_90,true,true,
+                            (d)->d>3 && d<48 && Math.abs(d+6-bot.getPose().x)<10,
+                            (d)->d>3 && d<60));
+        }else if(signalResult == SignalResult.TWO){
+            driveToPosition(20, 6, 36f, 36, 90, 4, 1,
+                    new PowerPlayDistUpdater(Quadrant.RED_RIGHT,HeadingIndex.H_90,true,true));
         }
     }
 
