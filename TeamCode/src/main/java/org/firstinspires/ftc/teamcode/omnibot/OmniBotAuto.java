@@ -667,10 +667,10 @@ public abstract class OmniBotAuto extends LinearOpMode {
          * and grab first stack cone
          */
         if(quadrant == Quadrant.BLUE_RIGHT || quadrant == Quadrant.RED_RIGHT) {
-            driveToPosition(highSpeed, adjustedX, 16.5f, initHeadingDegrees, 1, null);
-            turnToHeading(-135, 3, 6, 150);
+            driveToPosition(highSpeed, adjustedX, 18, initHeadingDegrees, 1, null);
             bot.openClaw();
             bot.setLiftPosition(liftPosition);
+            turnToHeading(-135, 3, 6, 150);
             sleep(200);
             driveToPosition(highSpeed, adjustedX, 10.5f, -135, 1, null);
             bot.closeClaw();
@@ -679,7 +679,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
             driveToPosition(highSpeed, adjustedX, 124.5f, initHeadingDegrees, 1, null);
             turnToHeading(45, 3, 6, 150);
             bot.openClaw();
-            bot.setLiftPosition(-440);
+            bot.setLiftPosition(liftPosition);
             sleep(200);
             driveToPosition(highSpeed, adjustedX, 130.5f, 45, 1, null);
             bot.closeClaw();
@@ -714,7 +714,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
             // Drive to stack and pick up cone
             float adjustedX = X_TAPE_EDGE + xOffset;
-            driveTapeToStack45(quadrant, xOffset, -90, -440);
+            driveTapeToStack45(quadrant, xOffset, -90, -420);
             bot.setLiftPosition(OmniBot.LIFT_LOW);
             sleep(200);
 
@@ -749,7 +749,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
             //Adjust x position until color sensor is at near edge of tape
             float adjustedX = X_TAPE_EDGE + xOffset;
-            driveTapeToStack45(quadrant, xOffset, -90, -440);
+            driveTapeToStack45(quadrant, xOffset, -90, -420);
             bot.setLiftPosition(OmniBot.LIFT_LOW);
             sleep(200);
 
@@ -758,7 +758,7 @@ public abstract class OmniBotAuto extends LinearOpMode {
              */
             driveToPosition(highSpeed, adjustedX, 123.5f, 45, 1, null);
             turnToHeading(180, 3, 6, 120);
-            driveToPosition(highSpeed,  52.25f, 123.5f, 180, 1, null);
+            driveToPosition(highSpeed,  53, 123.5f, 180, 1, null);
         }
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
@@ -782,15 +782,14 @@ public abstract class OmniBotAuto extends LinearOpMode {
             sleep(400);
             driveToPosition(lowSpeed, 38, 50.5f, -90, 1, null);
         } else{
-            driveToPosition(highSpeed, 39, 105, -90, 1,
-                    new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_NEG_90, true, false)); // was vmax = 10, vmin = 4
+            driveToPosition(highSpeed, 39, 105, -90, 1, null);// was vmax = 10, vmin = 4
             driveToPosition(midSpeed, 36, 105, -90, 1, null);
 
-            driveToPosition(midSpeed, 36, 97, -90, 1, null);
+            driveToPosition(highSpeed, 36, 97, -90, 1, null);
 
             bot.setPivotPosition(OmniBot.PIVOT_SCORING);
             sleep(400);
-            driveToPosition(lowSpeed, 39, 97, -90, 1, null);
+            driveToPosition(lowSpeed, 38, 97, -90, 1, null);
         }
 
 
@@ -805,19 +804,28 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
     public void parkFromLowJunction(Quadrant quadrant, SignalResult signalResult){
         if (quadrant == Quadrant.BLUE_RIGHT || quadrant == Quadrant.RED_RIGHT){
-            driveToPosition(highSpeed, bot.getPose().x, bot.getPose().y-3, 90, 1,null);
+            driveToPosition(highSpeed, bot.getPose().x, bot.getPose().y-4, 90, 1,null);
             switch(signalResult){
                 case THREE:
                     break;
                 case TWO:
                 case ONE:
-                    driveToPosition(ultraHighSpeed, 36, bot.getPose().y, 90, 1,
+                    driveToPosition(ultraHighSpeed, 37, bot.getPose().y, 90, 1,
                             new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, true,true));
-                    float targetY = signalResult == SignalResult.ONE? 60 : 36;
-                    driveToPosition(ultraHighSpeed, 36, targetY, 90, 1,
-                            new WiggleProfile(3, 0.1f, 2),
-                            new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, true, true,
-                                    d-> d>3 && d<40 && Math.abs(d+6-bot.getPose().x)<10, d-> d>3 && d<40));
+                    float targetY = signalResult == SignalResult.ONE? 56 : 32;
+                    driveToPosition(ultraHighSpeed, 38, targetY, 90, 1,
+                            new WiggleProfile(5, 0.1f, 2),
+                            new Runnable() {
+                                boolean done = false;
+                                public void run() {
+                                    if (!done && bot.getPose().y > 16) {
+                                        done = true;
+                                        bot.setLiftPosition(OmniBot.LIFT_MAX);
+                                    }
+                                }
+                            },
+                    new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, true, true,
+                                    d-> d>3 && d<30 && Math.abs(d+6-bot.getPose().x)<10, d-> d>3 && d<40));
                     break;
             }
         } else {
@@ -826,14 +834,30 @@ public abstract class OmniBotAuto extends LinearOpMode {
             switch(signalResult){
                 case THREE:
                 case TWO:
-                    driveToPosition(ultraHighSpeed, 35, 128.75f, 180, 1,
-                            new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_180, true, true));
-                    float targetY = signalResult == SignalResult.THREE? 84 : 108;
-                    driveToPosition(highSpeed, 35, targetY, 180, 1, new WiggleProfile(5, 0.1f, 2),
+                    driveToPosition(ultraHighSpeed, 37, 128.75f, 180, 1,
                             new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_180, true, true,
-                                    (d)-> d>3 && d<48 && Math.abs(d + 6 - bot.getPose().x) < 10, (d) -> d>3 && d>48));
+                                    d -> d>3 && d < 42, d -> d>3 && d<30 && bot.getPose().x<46));
+                    float targetY = signalResult == SignalResult.THREE? YMAX - 56 : YMAX - 32;
+                    driveToPosition(ultraHighSpeed, 38, targetY, 180, 1,
+                            new WiggleProfile(5, 0.1f, 2),
+                            new Runnable() {
+                                boolean done = false;
+                                @Override
+                                public void run() {
+                                    if (!done && bot.getPose().y< YMAX-16){
+                                        done = true;
+                                        bot.setLiftPosition(OmniBot.LIFT_MAX);
+                                    }
+                                }
+                            },
+                    new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_180, true, true,
+                                    (d)-> d>3 && d<48 && Math.abs(d + 6 - bot.getPose().x) < 10, (d) -> d>3 && d<40));
                     break;
                 case ONE:
+                    driveToPosition(ultraHighSpeed, 40, 128.75f, 180, 1,
+                        new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_180, true, true,
+                                d -> d>3 && d < 42, d -> d>3 && d<30 && bot.getPose().x<46));
+                    driveToPosition(midSpeed, 40, 132, 180, 1, null);
                     break;
             }
         }

@@ -59,12 +59,12 @@ public class OneMidTwoLowBlueRight extends OmniBotAuto {
 
         driveToPosition(highSpeed, adjustedX, 15, -135, 1, null);
         turnToHeading(90, 3, 6, 150);
-        driveToPosition(highSpeed,  52.75f, 19.25f, 90, 1,null);
+        driveToPosition(highSpeed,  52.25f, 17.25f, 90, 1,null);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
         sleep(200);
-        bot.setClawPosition(OmniBot.LIFT_LOW);
+        bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(200);
 
         /*

@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.util.WiggleProfile;
  *  then park.
  */
 
-@Autonomous(name = "One Mid Two Low Left")
-public class OneMidTwoLowLeft extends OmniBotAuto {
+@Autonomous(name = "One Mid Two Low Blue Left")
+public class OneMidTwoLowBlueLeft extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
@@ -49,7 +49,7 @@ public class OneMidTwoLowLeft extends OmniBotAuto {
         /*
          * Drive back along tape and grab a cone at stack
          */
-        driveTapeToStack45(Quadrant.BLUE_LEFT, xOffset,180, -350);
+        driveTapeToStack45(Quadrant.BLUE_LEFT, xOffset,180, -330);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(200);
 
@@ -64,7 +64,7 @@ public class OneMidTwoLowLeft extends OmniBotAuto {
         sleep(200);
         bot.openClaw();
         sleep(200);
-        bot.setClawPosition(OmniBot.LIFT_LOW);
+        bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(200);
 
         /*

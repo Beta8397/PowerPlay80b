@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.omnibot.old_autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
@@ -24,6 +25,7 @@ import org.firstinspires.ftc.teamcode.util.WiggleProfile;
  *
  */
 
+@Disabled
 @Autonomous(name = "Wiggle2")
 public class Wiggle2 extends OmniBotAuto {
     @Override

@@ -6,21 +6,19 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.cv.VuforiaNavigator;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBot;
 import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
-import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 
 /**
- *  Deliver preload cone to mid, then two stacked cones to low junctions. Then park
- *  in the appropriate zone.
- *
+ *  Deliver preload cone to mid junction, then two stack cones to low junction,
+ *  then park.
  */
 
-@Autonomous(name = "One Mid Two Low Red Right")
-public class OneMidTwoLowRedRight extends OmniBotAuto {
+@Autonomous(name = "One Mid Two Low Red Left")
+public class OneMidTwoLowRedLeft extends OmniBotAuto {
     @Override
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
 
-        bot.setPose(8, 36, -90);
+        bot.setPose(8, 105, -90);
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
         VuforiaNavigator.activate(null, webcamName);
@@ -36,14 +34,18 @@ public class OneMidTwoLowRedRight extends OmniBotAuto {
         telemetry.update();
 
 
-        float xOffset = -1;
+        /*
+         * Deliver cone to mid, drive to stack, get cone and deliver it to low
+         */
+
+        float xOffset = 2;
         float adjustedX = X_TAPE_EDGE + xOffset;
-        deliverMidAndLow(Quadrant.BLUE_RIGHT, xOffset);
+        deliverMidAndLow(Quadrant.BLUE_LEFT, xOffset);
 
         /*
-         * Drive back to color tape, turn to position, and drive to cone stack.
+         * Drive back along tape and grab a cone at stack
          */
-        driveTapeToStack45(Quadrant.BLUE_RIGHT, xOffset, 90, -350);
+        driveTapeToStack45(Quadrant.BLUE_LEFT, xOffset,180, -330);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(200);
 
@@ -51,9 +53,9 @@ public class OneMidTwoLowRedRight extends OmniBotAuto {
          * Drive back to low junction and drop off cone.
          */
 
-        driveToPosition(highSpeed, adjustedX, 15, -135, 1, null);
-        turnToHeading(90, 3, 6, 150);
-        driveToPosition(highSpeed,  52.25f, 17.25f, 90, 1,null);
+        driveToPosition(highSpeed, 59.5f, 123f, 45, 1, null);
+        turnToHeading(180, 3, 6, 150);
+        driveToPosition(highSpeed,  53.25f, 124.25f, 180, 1, null);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);
         sleep(200);
         bot.openClaw();
@@ -63,12 +65,11 @@ public class OneMidTwoLowRedRight extends OmniBotAuto {
 
         /*
          * Drive to appropriate parking zone.
-         *
          */
 
-        parkFromLowJunction(Quadrant.RED_RIGHT, signalResult);
+        parkFromLowJunction(Quadrant.BLUE_LEFT, signalResult);
 
-        
     }
 
 }
+

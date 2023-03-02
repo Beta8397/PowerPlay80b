@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.omnibot.old_autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.Function;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.omnibot.OmniBotAuto;
 import org.firstinspires.ftc.teamcode.util.KalmanDistanceUpdater;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 
+@Disabled
 @Autonomous(name = "Red Right Auto Two Cone")
 public class RedRightAutoTwoCone extends OmniBotAuto {
     @Override

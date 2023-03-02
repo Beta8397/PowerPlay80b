@@ -169,7 +169,7 @@ public class OmniBotTeleOp extends LinearOpMode {
                 pivotScoring = !pivotScoring;
                 if (pivotScoring){
                     bot.setClawPosition(OmniBot.CLAW_CLOSED);
-                    sleep(100);
+                    sleep(200);
                     liftTarget = OmniBot.LIFT_HIGH - 300;
                 } else {
                     liftTarget = OmniBot.LIFT_MAX;
