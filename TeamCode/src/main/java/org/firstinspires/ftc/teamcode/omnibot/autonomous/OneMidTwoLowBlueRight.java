@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.omnibot.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
@@ -24,6 +25,8 @@ public class OneMidTwoLowBlueRight extends OmniBotAuto {
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
 
+        bot.setDriveZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         bot.setPose(8, 36, -90);
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
@@ -33,6 +36,8 @@ public class OneMidTwoLowBlueRight extends OmniBotAuto {
         bot.grabPosition();
 
         waitForStart();
+
+        totalTime.reset();
 
         // Get signal result
         signalResult = getSignalResult();

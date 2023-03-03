@@ -41,7 +41,8 @@ public class OneMidParkRight extends OmniBotAuto {
 
         driveToPosition(midSpeed, 34, bot.getPose().y, -90, 1, null);
 
-        bot.setLiftPosition(OmniBot.LIFT_LOW);
+        bot.setLiftPosition(OmniBot.LIFT_MAX);
+        bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
         sleep(500);
 
         float targetY;
@@ -49,12 +50,13 @@ public class OneMidParkRight extends OmniBotAuto {
             targetY = 36;
         } else if(signalResult == SignalResult.THREE){
             targetY = 13;
-        } else targetY = 58;
+        } else targetY = 60;
 
-        driveToPosition(midSpeed, 34, targetY, -90, 1,
+        driveToPosition(midSpeed, 36, targetY, -90, 1,
                 new WiggleProfile(5, 0.1f, 2),
                 new PowerPlayDistUpdater(Quadrant.RED_RIGHT, HeadingIndex.H_NEG_90, true, true,
-                        (d) -> d>3 && d<36 && Math.abs(d + 6 - bot.getPose().x) < 10, (d) -> d>3 && d<36));
+                        (d) -> d>3 && d<36 && Math.abs(d + 6 - bot.getPose().x) < 10,
+                        (d) -> d>3 && d<40 && Math.abs(d + 6 - bot.getPose().y) < 10));
 
         while(opModeIsActive()){
             telemetry.addData("Pose", "X = %.1f  Y = %.1f  TH = %.1f", bot.getPose().x, bot.getPose().y, Math.toDegrees(bot.getPose().theta));

@@ -192,6 +192,12 @@ OmniBot {
         left.setPower(pL);
     }
 
+    public void setDriveZeroPowerBehavior(DcMotor.ZeroPowerBehavior zpb){
+        front.setZeroPowerBehavior(zpb);
+        back.setZeroPowerBehavior(zpb);
+        left.setZeroPowerBehavior(zpb);
+        right.setZeroPowerBehavior(zpb);
+    }
 
     public void setDriveSpeed(float vx, float vy, float va){
         float px = vx * TICS_PER_INCH / MAX_TICS_PER_SEC;

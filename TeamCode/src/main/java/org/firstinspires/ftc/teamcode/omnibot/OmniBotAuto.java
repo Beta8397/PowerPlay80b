@@ -76,6 +76,8 @@ public abstract class OmniBotAuto extends LinearOpMode {
             LEFT_TARGET_LOCATION // Blue Left, aka Blue Back wall
     };
 
+    protected ElapsedTime totalTime = new ElapsedTime();
+
     protected SignalResult getSignalResult(){
         BlobHelper blobHelper = new BlobHelper(640, 480, 120, 0,
                 400, 320, 1);
@@ -380,6 +382,83 @@ public abstract class OmniBotAuto extends LinearOpMode {
 
             if (runnable != null) {
                 runnable.run();
+            }
+
+            // Heading error
+            float thetaError = (float) AngleUtil.normalizeRadians(headingTargetRadians - bot.getPose().theta);
+
+            // Convert the (xError, yError) vector to ROBOT coordinate system (xErrorRobot, yErrorRobot)
+            float sinTheta = (float) Math.sin(bot.getPose().theta);
+            float cosTheta = (float) Math.cos(bot.getPose().theta);
+            float xErrorRobot = xError * sinTheta - yError * cosTheta;
+            float yErrorRobot = xError * cosTheta + yError * sinTheta;
+
+            /*
+             * Robot speed will be the minimum of vMax and the two speeds computed from vMin,
+             * acceleration, and distances from starting and target points
+             */
+            float vMinSqr = profile.vMin * profile.vMin;
+            float speed = (float) Math.min(profile.vMax,
+                    Math.min(Math.sqrt(vMinSqr + 2 * d0 * profile.accel),
+                            Math.sqrt(vMinSqr + 2 * d1 * profile.accel)));
+
+            // Robot velocity vector
+            float vxr = speed * xErrorRobot / d1;
+            float vyr = speed * yErrorRobot / d1;
+            float va = 2.0f * thetaError;
+            bot.setDriveSpeed(vxr, vyr, va);
+        }
+        bot.setDriveSpeed(0, 0, 0);
+        bot.updateOdometry();
+    }
+
+    protected void driveToPosition(MotionProfile profile, float targetX, float targetY, float targetThetaDegrees,
+                                   float tolerance, WiggleProfile wiggleProfile, Pred predicate,
+                                   KalmanMeasurementUpdater updater) {
+        float headingTargetRadiansBase = targetThetaDegrees * (float) Math.PI / 180;
+
+        //Starting point
+        float x0 = bot.getPose().x;
+        float y0 = bot.getPose().y;
+
+        ElapsedTime et = new ElapsedTime();
+
+
+        while (opModeIsActive()) {
+
+            // Update bot pose with odometry, and if provided, adjust with Kalman filter
+            bot.updateOdometry();
+
+            float headingTargetRadians;
+            float seconds = (float) et.seconds();
+
+            if (seconds < wiggleProfile.seconds) {
+                headingTargetRadians = headingTargetRadiansBase +
+                        wiggleProfile.amplitude *
+                                (float) Math.sin(2 * Math.PI * wiggleProfile.frequency * seconds);
+            } else {
+                headingTargetRadians = headingTargetRadiansBase;
+            }
+
+            if (updater != null) {
+                Pose updatedPose = updater.updatePose(bot.getPose(), bot.getCovariance());
+                bot.adjustPose(updatedPose.x, updatedPose.y);
+            }
+
+            // Distance of botfrom starting point
+            float d0 = (float) Math.hypot(bot.getPose().x - x0, bot.getPose().y - y0);
+
+            // Vector (field coordinates) from bot to target point; d1 is magnitude of this vector
+            float xError = targetX - bot.getPose().x;
+            float yError = targetY - bot.getPose().y;
+            float d1 = (float) Math.hypot(xError, yError);
+
+            if (d1 < tolerance) break;
+            if (predicate != null) {
+                if(predicate.test()){
+                    bot.setDrivePower(0, 0, 0);
+                    break;
+                }
             }
 
             // Heading error
@@ -807,21 +886,26 @@ public abstract class OmniBotAuto extends LinearOpMode {
             driveToPosition(highSpeed, bot.getPose().x, bot.getPose().y-4, 90, 1,null);
             switch(signalResult){
                 case THREE:
+                    driveToPosition(ultraHighSpeed, 40, bot.getPose().y, 90, 1,
+                            new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, true, true,
+                                    d -> d>3 && d < 42, d -> d>3 && d<30 && bot.getPose().x<46));
+                    driveToPosition(midSpeed, 40, 10, 90, 1, null);
                     break;
                 case TWO:
                 case ONE:
                     driveToPosition(ultraHighSpeed, 37, bot.getPose().y, 90, 1,
                             new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, true,true));
-                    float targetY = signalResult == SignalResult.ONE? 56 : 32;
+                    float targetY = signalResult == SignalResult.ONE? 57 : 32;
                     driveToPosition(ultraHighSpeed, 38, targetY, 90, 1,
                             new WiggleProfile(5, 0.1f, 2),
-                            new Runnable() {
+                            new Pred(){
                                 boolean done = false;
-                                public void run() {
+                                public boolean test() {
                                     if (!done && bot.getPose().y > 16) {
                                         done = true;
                                         bot.setLiftPosition(OmniBot.LIFT_MAX);
                                     }
+                                    return totalTime.seconds() > 29.9;
                                 }
                             },
                     new PowerPlayDistUpdater(Quadrant.BLUE_RIGHT, HeadingIndex.H_90, true, true,
@@ -840,14 +924,15 @@ public abstract class OmniBotAuto extends LinearOpMode {
                     float targetY = signalResult == SignalResult.THREE? YMAX - 56 : YMAX - 32;
                     driveToPosition(ultraHighSpeed, 38, targetY, 180, 1,
                             new WiggleProfile(5, 0.1f, 2),
-                            new Runnable() {
+                            new Pred() {
                                 boolean done = false;
                                 @Override
-                                public void run() {
+                                public boolean test() {
                                     if (!done && bot.getPose().y< YMAX-16){
                                         done = true;
                                         bot.setLiftPosition(OmniBot.LIFT_MAX);
                                     }
+                                    return totalTime.seconds() > 29.9;
                                 }
                             },
                     new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_180, true, true,

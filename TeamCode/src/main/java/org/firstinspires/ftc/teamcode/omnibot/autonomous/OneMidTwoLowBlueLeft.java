@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.omnibot.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.GeneralMatrixF;
@@ -22,6 +23,8 @@ public class OneMidTwoLowBlueLeft extends OmniBotAuto {
     public void runOpMode() throws InterruptedException {
         bot.init(hardwareMap);
 
+        bot.setDriveZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         bot.setPose(8, 105, -90);
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
@@ -31,6 +34,8 @@ public class OneMidTwoLowBlueLeft extends OmniBotAuto {
         bot.grabPosition();
 
         waitForStart();
+
+        totalTime.reset();
 
         // Get signal result
         signalResult = getSignalResult();
@@ -49,6 +54,8 @@ public class OneMidTwoLowBlueLeft extends OmniBotAuto {
         /*
          * Drive back along tape and grab a cone at stack
          */
+        xOffset = 1.5f;
+        adjustedX = X_TAPE_EDGE + xOffset;
         driveTapeToStack45(Quadrant.BLUE_LEFT, xOffset,180, -330);
         bot.setLiftPosition(OmniBot.LIFT_LOW);
         sleep(200);
@@ -57,7 +64,7 @@ public class OneMidTwoLowBlueLeft extends OmniBotAuto {
          * Drive back to low junction and drop off cone.
          */
 
-        driveToPosition(highSpeed, 59.5f, 123f, 45, 1, null);
+        driveToPosition(highSpeed, adjustedX, 123f, 45, 1, null);
         turnToHeading(180, 3, 6, 150);
         driveToPosition(highSpeed,  53.25f, 124.25f, 180, 1, null);
         bot.setLiftPosition(OmniBot.LIFT_LOW + 200);

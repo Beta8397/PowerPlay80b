@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.util.WiggleProfile;
 /**
  *  Deliver preload cone to mid junction, then two stack cones to low junction,
  *  then park.
+ *
  */
 
 @Autonomous(name = "One Mid Park Left")
@@ -42,7 +43,8 @@ public class OneMidParkLeft extends OmniBotAuto {
         deliverMid(Quadrant.BLUE_LEFT);
 
         driveToPosition(midSpeed, 34, bot.getPose().y, -90, 1, null);
-        bot.setLiftPosition(OmniBot.LIFT_LOW);
+        bot.setLiftPosition(OmniBot.LIFT_MAX);
+        bot.setPivotPosition(OmniBot.PIVOT_GRABBING);
         sleep(500);
 
         float targetY = YMAX - 13;
@@ -52,10 +54,11 @@ public class OneMidParkLeft extends OmniBotAuto {
             targetY = YMAX - 58;
         }
 
-        driveToPosition(midSpeed, 34, targetY, -90, 1,
+        driveToPosition(midSpeed, 36, targetY, -90, 1,
                 new WiggleProfile(5, 0.1f, 2),
                 new PowerPlayDistUpdater(Quadrant.RED_LEFT, HeadingIndex.H_NEG_90, true, true,
-                        (d) -> d>3 && d<36, (d) -> d>3 && d<60 && Math.abs(d + 6 - bot.getPose().y) < 10));
+                        (d) -> d>3 && d<36 && Math.abs(d + 6 - bot.getPose().x) <10,
+                        (d) -> d>3 && d<40 && Math.abs(d + 6 - bot.getPose().y) < 10));
 
     }
 
